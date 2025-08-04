@@ -8,15 +8,25 @@
 - **Never create a file longer than 500 lines of code.** If a file approaches this limit, refactor by splitting it into modules or helper files.
 - **Organize code into clearly separated modules**, grouped by feature or responsibility.
   For agents this looks like:
-    - `agent.py` - Main agent definition and execution logic 
-    - `tools.py` - Tool functions used by the agent 
-    - `prompts.py` - System prompts
+    - `agent` - Main agent definition and execution logic 
+    - `tools` - Tool functions used by the agent 
+    - `prompts` - System prompts
 - **Use clear, consistent imports** (prefer relative imports within packages).
-- **Use python_dotenv and load_env()** for environment variables.
+- **Use dotenv and load_env()** for environment variables.
+
+### Development Process
+- **Always develop code using BDD and TDD principles** (prefer Cucumber for BDD then breakdown BDD tests into integration and unit tests, before writing the code to make these tests pass)
+- **Always use the Red, Green, Refactor cycle** no new code is complete until the tests are passing.
+- **When the project has APIs, use Pact contract tests** see: https://github.com/pact-foundation, https://github.com/pact-foundation/pact-js, https://github.com/pact-foundation/pact-python and other pact repos for more information.
+- **Where appropriate, include integration tests** ensuring that code modules work correctly with each other
+- **If the development environment is in Docker, run the tests in docker** check to see if there is an existing docker setup and create it if not.
+- **When the project has database(s), and code changes require schema changes** always run database migrations before running tests.
+- **Always include instructions for running the tests in the `README.md`**
+
 
 ### 🧪 Testing & Reliability
-- **Always create Pytest unit tests for new features** (functions, classes, routes, etc).
-- **After updating any logic**, check whether existing unit tests need to be updated. If so, do it.
+- **Always create, BDD, integration and unit tests for new features** (functions, classes, routes, etc).
+- **After updating any logic**, check whether existing tests need to be updated. If so, do it.
 - **Tests should live in a `/tests` folder** mirroring the main app structure.
   - Include at least:
     - 1 test for expected use
@@ -29,7 +39,7 @@
 
 ### 📎 Style & Conventions
 - Write **docstrings for every function** using the Google style:
-  ```python
+  ```
   def example():
       """
       Brief summary.
