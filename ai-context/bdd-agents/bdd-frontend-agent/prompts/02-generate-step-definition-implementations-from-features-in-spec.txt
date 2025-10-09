@@ -3,3 +3,4 @@ Use the BDD Frontend Agent configuration file: @ai-context/bdd-agents/bdd-fronte
 that you can maintain a consistent style. Always follow these rules: 
 - when the implementation requires API calls that do not currently exist, create mock API data in in the server/api/ folder
 - when the implementation opens a page, always check that the HTML response code is correct for the situation i.e. usually a 200 response
+- when the implementation requires new BDD objects, create typescript types for them i.e. don't default to the 'any' type
