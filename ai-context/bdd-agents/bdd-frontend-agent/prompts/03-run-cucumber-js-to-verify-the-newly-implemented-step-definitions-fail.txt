@@ -1,0 +1,3 @@
+Run cucumber.js to verify that the newly implemented step definitions fail. This is expected as the application code has not been created yet.
+Confirm that the failures are for the expected reasons, e.g. the expected element doesn't exist etc. Any step definitions that are not failing
+for the expected reason must be fixed.

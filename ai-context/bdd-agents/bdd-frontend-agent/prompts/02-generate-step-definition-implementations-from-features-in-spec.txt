@@ -1,0 +1,2 @@
+Use the BDD Frontend Agent configuration file: @ai-context/bdd-agents/bdd-frontend-agent/bdd-test-agent-context.md and the previously generated step definition scaffolding to
+generate step definition implementations. Before you begin, take a look at previously generated step definition implementations so that you can maintain a consistent style.
