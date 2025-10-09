@@ -1,0 +1,1 @@
+Run this terminal command: "npx cucumber-js --dry-run --format progress-bar > temp/step-definition-scaffolds.txt" to generate step definition scaffolding
