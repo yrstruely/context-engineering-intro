@@ -1,3 +1,5 @@
 Use the BDD Frontend Agent configuration file: @ai-context/bdd-agents/bdd-frontend-agent/bdd-test-agent-context.md and the previously generated step definition scaffolding
 @temp/step-definition-scaffolds.txt to generate step definition implementations. Before you begin, take a look at previously generated step definition implementations so 
-that you can maintain a consistent style.
+that you can maintain a consistent style. Always follow these rules: 
+- when the implementation requires API calls that do not currently exist, create mock API data in in the server/api/ folder
+- when the implementation opens a page, always check that the HTML response code is correct for the situation i.e. usually a 200 response
