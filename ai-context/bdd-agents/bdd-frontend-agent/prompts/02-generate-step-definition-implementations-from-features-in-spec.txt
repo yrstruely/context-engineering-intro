@@ -2,6 +2,7 @@ Use the BDD Frontend Agent configuration file: @ai-context/bdd-agents/bdd-fronte
 @temp/step-definition-scaffolds.txt to generate step definition implementations. Before you begin, take a look at previously generated step definition implementations so 
 that you can maintain a consistent style. Always follow these rules: 
 - when the implementation requires API calls that do not currently exist, create mock API data in in the server/api/ folder using RESTful API design patterns
+- when the implementation opens a page, always use RESTful URL patterns i.e. the users page is '/users' and a user is '/users/1' etc.
 - when the implementation opens a page, always check that the HTML response code is correct for the situation i.e. usually a 200 response
 - when the implementation requires new BDD objects, create typescript types for them i.e. don't default to the 'any' type
 - when adding variables in step definitions at the World scope i.e. this.variableName always declare them in the @features/support/world.ts file
