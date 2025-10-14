@@ -7,3 +7,4 @@ that you can maintain a consistent style. Always follow these rules:
 - when the implementation requires new BDD objects, create typescript types for them i.e. don't default to the 'any' type
 - when adding variables in step definitions at the World scope i.e. this.variableName always declare them in the @features/support/world.ts file
 - when adding dataTable in step definition method definitions define them using the DataTable type
+- when you think that you are finished with implementation, always run eslint to resolve any lint issues
