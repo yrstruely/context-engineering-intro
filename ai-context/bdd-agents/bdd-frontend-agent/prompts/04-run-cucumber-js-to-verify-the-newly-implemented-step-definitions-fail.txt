@@ -1,3 +1,4 @@
 Run cucumber.js to verify that the newly implemented step definitions fail. This is expected as the application code has not been created yet.
 Confirm that the failures are for the expected reasons, e.g. the expected element doesn't exist etc. Any step definitions that are not failing
-for the expected reason must be fixed.
+for the expected reason must be fixed. Important, we are currently in the BDD Red phase, so it is expected that tests will fail due to pages and 
+other elements not existing yet.
