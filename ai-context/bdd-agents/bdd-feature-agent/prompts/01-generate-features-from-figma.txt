@@ -1,4 +1,0 @@
-Use the BDD Agent configuration file: @ai-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md and then generate feature files using these specifications: 
-@specs/04-asset-dashboard.png. This specification file contains both screenshots and written requirements for the features. It also breaks down the feature into incremental 
-phases, make sure to state which features are for which phase. Save the created feature files in the: @specs/04-asset-dashboard/ folder (if it doesn't exist, create it).
-Before you begin, take a look in the @specs/ folder for previous features so that you can maintain a consistent style.

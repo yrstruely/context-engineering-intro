@@ -1,2 +1,0 @@
-I have made modifications to the step definition implementations, review these changes and then:
-- check that they are an improvement on their original implementation, if not discuss further modifications.
