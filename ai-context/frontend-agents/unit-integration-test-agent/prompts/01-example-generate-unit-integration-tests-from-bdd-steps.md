@@ -5,16 +5,36 @@ below to implement the tests for the Feature or Scenario described in 'featureTe
 
 ## Initial Input Prompt
 
-!!!! Important Replace 'featureText' with Actual Feature, this is just an example !!!!
+<!-- !!!! Important Replace 'featureText' with Actual Feature, this is just an example !!!! -->
 
 {
   "featureText": "
-Feature: Dashboard User View
+@04-asset-dashboard
+Feature: Patent Registration Dashboard - Core Functionality (Phase 1)
+  In order to efficiently manage patent applications and track filing progress
+  As a patent applicant or IP professional
+  I want to access a comprehensive dashboard that displays key filing information and actions
 
-  Scenario: Logged-in user sees their name
-    Given a logged-in user
-    When they visit the dashboard
-    Then they should see their name displayed
+  The core dashboard provides essential functionality for viewing patent applications,
+  selecting filing strategies, and tracking basic application progress.
+
+  Background:
+    Given the IP Hub platform is available
+    And patent registration services are operational
+    And Alice is an authenticated patent applicant
+
+  Rule: Dashboard displays patent application overview
+
+    @frontend
+    Scenario: User views patent registration dashboard
+      Given Alice has submitted patent assets
+      When Alice navigates to the patent registration dashboard
+      Then Alice sees the "Patent Registration Dashboard" header
+      And Alice sees the "Strategy" section
+      And Alice sees the "Application Progress" section
+      And Alice sees the "Collaboration" section
+      And Alice sees the "Intelligence (Prior Art)" section
+      And Alice sees the "Add module" section
   ",
   "targetScope": "unit-integration",
   "sourceContext": [
@@ -121,7 +141,7 @@ This is an **IP (Intellectual Property) Hub** platform supporting:
 - **Trademark applications**
 - **Copyright registrations**
 - **Filing strategies** (Single, Comprehensive)
-- **Jurisdictions**: Dubai/GCC, PCT, National Offices
+- **Jurisdictions**: Dubai/UAE, PCT, National Offices
 - **Collaboration** features
 - **Prior art search** and intelligence
 

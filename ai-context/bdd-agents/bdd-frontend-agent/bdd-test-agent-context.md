@@ -529,6 +529,7 @@ Given('Alice is a registered user with email {string}', async function (email) {
 });
 
 When('Alice logs in with her valid credentials', async function () {
+  // MSW automatically intercepts this request and returns mock data
   this.loginResponse = await this.authService.login({
     email: this.alice.email,
     password: this.alice.password
@@ -914,21 +915,8 @@ class CustomWorld extends World {
     this.currentUser = null;
     this.loginResponse = null;
     
-    // Initialize service stubs (to be replaced with real implementation)
-    this.authService = {
-      login: async (credentials) => {
-        throw new Error('AuthService.login not yet implemented');
-      }
-    };
-    
-    this.userRepository = {
-      save: async (user) => {
-        throw new Error('UserRepository.save not yet implemented');
-      },
-      findByEmail: async (email) => {
-        throw new Error('UserRepository.findByEmail not yet implemented');
-      }
-    };
+    // No need to stub services - MSW handles API mocking
+    // Services can call real fetch/axios and MSW intercepts
   }
 }
 
@@ -1367,6 +1355,36 @@ All tests fail as expected due to missing application code. This is the correct 
 
 ### Known Patterns
 [PLACEHOLDER - Will be populated from scanning existing tests]
+
+### MSW Mock Server Setup
+
+The project uses MSW (Mock Service Worker) for API mocking during BDD tests:
+
+**Setup** (in hooks or world.ts):
+```typescript
+import { startMockServer, resetMockServer } from '../test/msw/server'
+
+Before(async function() {
+  // MSW automatically intercepts HTTP requests
+  // No additional setup needed in step definitions
+})
+```
+
+**Making API Requests**:
+- Use standard `fetch()`, `axios`, or `page.request.get()`
+- MSW intercepts requests automatically
+- Returns environment-specific mock data
+
+**Data Scenarios**:
+- Controlled via MSW_ENV environment variable
+- `dev.local`: Rich data for UI testing (local development)
+- `test`: Minimal data for specific scenarios
+- `ci`: Deterministic data for CI/CD
+
+**No Query Parameters Needed**:
+- MSW handlers return production-like responses
+- Scenario variations handled via environment config
+- Keep API structure clean and production-ready
 
 ---
 

@@ -1500,3 +1500,78 @@ Given('the following users exist:', function(dataTable) {
 10. **Avoid duplication** - Use parameterized steps and helper methods
 11. **Technology-agnostic examples** - No technical details in scenarios
 12. **Concrete examples** - Use real names, dates, amounts
+
+---
+
+## MSW Mock Server Integration
+
+### Overview
+
+Cucumber tests use MSW (Mock Service Worker) for API mocking during test execution:
+
+### Setup
+
+**File**: `features/support/hooks.ts`
+
+```typescript
+import { Before, BeforeAll, AfterAll } from '@cucumber/cucumber'
+import { startMockServer, stopMockServer, resetMockServer } from '../../test/msw/server'
+
+BeforeAll(async function () {
+  // Only start MSW in local/test environments
+  if (!process.env.USE_REAL_API) {
+    startMockServer()
+  }
+})
+
+Before(async function () {
+  // Reset handlers between scenarios
+  if (!process.env.USE_REAL_API) {
+    resetMockServer()
+  }
+})
+
+AfterAll(async function () {
+  // Stop MSW after all tests
+  if (!process.env.USE_REAL_API) {
+    stopMockServer()
+  }
+})
+```
+
+### In Step Definitions
+
+- Use standard HTTP requests (`page.request.get()`, `fetch()`)
+- MSW intercepts automatically
+- No need to manually stub APIs
+- Works seamlessly with Playwright browser automation
+
+**Example Step Definition**:
+```typescript
+When('Alice logs in with her valid credentials', async function () {
+  // MSW intercepts this request and returns mock data
+  const response = await this.page.request.post('/api/auth/login', {
+    data: {
+      email: this.alice.email,
+      password: this.alice.password
+    }
+  })
+  this.loginResponse = await response.json()
+})
+```
+
+### Environment Control
+
+- **Local dev**: MSW provides mocks (`MSW_ENV=dev.local`)
+- **DEV E2E environment**: Real APIs (`USE_REAL_API=true`)
+- **UAT/STG/PRD**: Real APIs (`USE_REAL_API=true`)
+
+### Benefits
+
+✅ No separate Pact stub server needed
+✅ In-process mocking (faster, more reliable)
+✅ Environment-specific data via MSW_ENV
+✅ Production-like API structure
+✅ Automatic Pact contract generation from MSW handlers
+
+---
