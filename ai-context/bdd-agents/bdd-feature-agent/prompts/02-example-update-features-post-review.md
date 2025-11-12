@@ -7,14 +7,14 @@ You are playing the role of: BDD Feature Agent for requirements refinement. Use 
 !!!! Important: Replace paths and actual review feedback !!!!
 
 {
-  "featureFile": "tests/features/04-asset-dashboard/phase1-core-dashboard.feature",
+  "featureFile": "features/02-dashboard-overview/phase1-core-dashboard-overview.feature",
+  "relatedFeatures": [
+     "specs/02-dashboard-overview/phase2-enhanced-dashboard-overview.feature",
+     "specs/02-dashboard-overview/phase3-advanced-dashboard-overview.feature"
+  ],
   "task": "02-update-features-post-review",
   "reviewSource": "stakeholder_comments | user_feedback | gap_analysis",
   "contextFile": "ai-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md",
-  "relatedFeatures": [
-    "tests/features/04-asset-dashboard/phase2-enhanced-dashboard.feature",
-    "tests/features/04-asset-dashboard/phase3-advanced-dashboard.feature"
-  ],
   "updateScope": "add_scenarios | update_existing | remove_scenarios | all"
 }
 

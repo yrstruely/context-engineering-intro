@@ -12,7 +12,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
     "features/step-definitions/user-steps.ts"
   ],
   "featureFiles": [
-    "features/phase1-core-dashboard.feature"
+    "features/02-dashboard-overview/phase1-core-dashboard-overview.feature"
   ],
   "task": "04-run-cucumber-js-verify-step-definitions-fail",
   "testFramework": "playwright",

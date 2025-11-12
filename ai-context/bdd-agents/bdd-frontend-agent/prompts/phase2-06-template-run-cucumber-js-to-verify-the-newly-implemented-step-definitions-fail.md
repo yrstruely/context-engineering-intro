@@ -12,7 +12,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
     "features/step-definitions/<<YOUR-DOC-HERE>>.ts"
   ],
   "featureFiles": [
-    "features/<<YOUR-DOC-HERE>>.feature"
+    "features/<<YOUR-DIR-HERE>>/<<YOUR-DOC-HERE>>.feature"
   ],
   "task": "04-run-cucumber-js-verify-step-definitions-fail",
   "testFramework": "playwright",

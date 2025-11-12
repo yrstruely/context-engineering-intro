@@ -1,23 +1,25 @@
-## BDD Frontend Agent - Generate Step Definition Implementations
+## BDD Frontend Agent - Phase 2: Implement Step Definitions
 
-You are playing the role of: BDD Frontend Agent for E2E testing. Use the instructions below to implement step definitions from the generated scaffolding.
+You are playing the role of: BDD Frontend Agent - Phase 2 (Step Definition Implementation). Use the instructions below to implement step definitions from the generated scaffolding using MSW-mocked APIs.
 
 ## Initial Input Prompt
 
-!!!! Important: No files to change for this one !!!!
+!!!! Important: MSW handlers must be created first (Phase 1) !!!!
 
 {
   "scaffoldingFile": "temp/step-definition-scaffolds.txt",
   "contextFile": "@ai-context/bdd-agents/bdd-frontend-agent/bdd-test-agent-context.md",
-  "task": "02-generate-step-definition-implementations",
+  "task": "phase2-04-implement-step-definitions",
+  "phase": "2-step-definition-implementation",
   "testFramework": "playwright",
   "bddFramework": "cucumber",
   "projectType": "nuxt3-e2e",
   "language": "typescript",
   "sourceContext": [
-    "features/phase1-core-dashboard.feature",
-    "specs/<<YOUR-FEATURE-FOLDER-HERE>>/phase1-core-dashboard.feature"
-  ]
+    "features/<<YOUR-FEATURE-FOLDER-HERE>>/phase1-core-*.feature",
+    "specs/<<YOUR-FEATURE-FOLDER-HERE>>/phase1-core-*.feature"
+  ],
+  "mswHandlersAvailable": true
 }
 
 ## BDD Frontend Agent Behavior (Step-by-Step)
@@ -36,10 +38,13 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
    - Follow the helper pattern: use `toTestId()` for converting text to data-testid values
    - Use async/await for all asynchronous operations
 
-3. **Handle API Interactions**
-   - When implementation requires API calls that don't exist: create mock API endpoints in `server/api/`
+3. **Handle API Interactions with MSW Mocks**
+   - **IMPORTANT**: All API calls are automatically mocked by MSW (from Phase 1)
+   - **DO NOT** create mock API endpoints in `server/api/` - MSW handles all API mocking
+   - Use standard `this.page.request.get()` / `this.page.request.post()` - MSW intercepts automatically
    - Always check HTTP response codes (e.g., `expect(response.status()).toBe(200)`)
-   - Mock data should match TypeScript interfaces defined in `features/support/types.ts`
+   - Mock data comes from MSW handlers in `test/msw/handlers/`
+   - Data structures match TypeScript interfaces defined in `features/support/types.ts`
 
 4. **Type Safety**
    - Create TypeScript interfaces for new BDD objects in `features/support/types.ts`
@@ -59,7 +64,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 - ✅ Check `if (!this.page)` before any page interactions
 - ✅ Use async/await for all step functions
 - ✅ Type all function parameters properly
-- ✅ Create mock APIs in `server/api/` when needed
+- ✅ **Use MSW-mocked APIs** (from Phase 1) - NO manual server/api/ endpoints needed
 - ✅ Verify HTTP response codes for API calls
 - ✅ Use helper functions from `features/support/helpers.ts`
 - ✅ Store state in World object properties (this.patentApplications, this.collaborators, etc.)
@@ -70,6 +75,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 - ❌ Don't use `any` type
 - ❌ Don't hardcode wait times (use Playwright's auto-waiting)
 - ❌ Don't interact with page without checking if it's initialized
+- ❌ **Don't create mock APIs in server/api/** - MSW handles all mocking
 
 ## Expected Output (Agent's Response Schema)
 
@@ -77,22 +83,25 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
   "implementedSteps": 25,
   "createdFiles": [
     "features/step-definitions/dashboard-steps.ts",
-    "features/step-definitions/common-steps.ts",
-    "server/api/collaborators.ts",
-    "server/api/applications.ts"
+    "features/step-definitions/common-steps.ts"
   ],
   "updatedFiles": [
     "features/support/types.ts",
     "features/support/world.ts"
   ],
+  "mswHandlersUsed": [
+    "dashboardHandlers",
+    "applicationsHandlers",
+    "collaboratorsHandlers"
+  ],
   "status": "success",
-  "summary": "Implemented 25 step definitions with proper TypeScript types and mock APIs",
+  "summary": "Implemented 25 step definitions with proper TypeScript types using MSW-mocked APIs",
   "implementationNotes": [
     "Created Collaborator interface in types.ts",
-    "Added mock collaborators API endpoint",
-    "Updated World interface with collaborators property"
+    "Updated World interface with collaborators property",
+    "All API calls intercepted by MSW handlers from Phase 1"
   ],
-  "nextStep": "03-update-step-definition-implementations-post-review"
+  "nextStep": "phase2-05-update-step-definitions-post-review"
 }
 
 ## Project-Specific Context
@@ -127,7 +136,8 @@ export interface ICustomWorld extends World {
 Given('Alice has submitted patent applications', async function (this: ICustomWorld) {
   if (!this.page) throw new Error('Page not initialized')
 
-  // Fetch from mock API
+  // Fetch from MSW-mocked API (intercepted automatically)
+  // MSW handler returns data from test/msw/handlers/applications.ts
   const response = await this.page.request.get('http://localhost:3000/api/applications?type=patent')
   expect(response.status()).toBe(200)
 
@@ -135,6 +145,8 @@ Given('Alice has submitted patent applications', async function (this: ICustomWo
   expect(result.success).toBe(true)
 
   this.patentApplications = result.data
+  // ✅ MSW automatically returns environment-specific mock data
+  // ✅ No server/api/ endpoint needed
 })
 ```
 
@@ -184,25 +196,45 @@ Then('Alice sees the {string} sub-section with these cards:', async function (
 })
 ```
 
-### Mock API Pattern
-Create in `server/api/` directory:
+### MSW Mock Pattern (Phase 1)
+
+**IMPORTANT**: API mocking is handled by MSW (Mock Service Worker) from Phase 1.
+
+**MSW Handler Location**: `test/msw/handlers/[domain].ts`
+
+Example MSW handler (already created in Phase 1):
 ```typescript
-// server/api/collaborators.ts
-export default defineEventHandler((event) => {
-  return {
-    success: true,
-    data: [
-      {
-        id: 'COLLAB-001',
-        name: 'Bob Smith',
-        email: 'bob@example.com',
-        role: 'Patent Agent',
-        accessLevel: 'Full access',
-        lastActive: new Date()
-      }
-    ]
-  }
+// test/msw/handlers/collaborators.ts
+import { http, HttpResponse, delay } from 'msw'
+import { MSW_CONFIG, getEnvironmentData } from '../config'
+
+const collaboratorsData = getEnvironmentData({
+  test: [
+    { id: 'COLLAB-001', name: 'Test User', role: 'Patent Agent' }
+  ],
+  'dev.local': [
+    { id: 'COLLAB-001', name: 'Bob Smith', email: 'bob@example.com', role: 'Patent Agent' },
+    { id: 'COLLAB-002', name: 'Jane Doe', email: 'jane@example.com', role: 'Trademark Attorney' }
+  ],
+  ci: [
+    { id: 'COLLAB-CI-001', name: 'CI User', role: 'Patent Agent' }
+  ]
 })
+
+export const collaboratorsHandlers = [
+  http.get('/api/collaborators', async () => {
+    await delay(MSW_CONFIG.delay)
+    return HttpResponse.json({ success: true, data: collaboratorsData })
+  })
+]
+```
+
+**In Step Definitions**: Just make API calls normally - MSW intercepts automatically
+```typescript
+// Step definition - no need to create server/api/ endpoints
+const response = await this.page.request.get('http://localhost:3000/api/collaborators')
+// ✅ MSW intercepts and returns mock data
+// ✅ No server/api/collaborators.ts needed
 ```
 
 ### Helper Functions

@@ -16,7 +16,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
   "language": "typescript",
   "sourceContext": [
     "features/phase1-core-dashboard.feature",
-    "specs/04-asset-dashboard/phase1-core-dashboard.feature"
+    "specs/02-dashboard-overview/phase1-core-dashboard-overview.feature"
   ]
 }
 

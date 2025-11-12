@@ -7,10 +7,10 @@ You are playing the role of: BDD Feature Agent for non-functional requirements a
 !!!! Important: Replace with actual feature file path !!!!
 
 {
-  "featureFile": "tests/features/<<YOUR-FEATURE-FOLDER-HERE>>/<<YOUR-DOC-HERE>>.feature",
+  "featureFile": "features/<<YOUR-FEATURE-FOLDER-HERE>>/<<YOUR-DOC-HERE>>.feature",
   "task": "03-generate-non-functional-requirements",
   "contextFile": "ai-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md",
-  "outputFile": "tests/features/<<YOUR-FEATURE-FOLDER-HERE>>/non-functional-requirements.md",
+  "outputFile": "specs/<<YOUR-FEATURE-FOLDER-HERE>>/non-functional-requirements.md",
   "requirementCategories": [
     "performance",
     "security",

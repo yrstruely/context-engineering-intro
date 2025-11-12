@@ -12,7 +12,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
     "features/step-definitions/user-steps.ts"
   ],
   "sourceContext": [
-    "features/phase1-core-dashboard.feature",
+    "features/02-dashboard-overview/phase1-core-dashboard-overview.feature",
     "features/support/world.ts",
     "features/support/types.ts"
   ],

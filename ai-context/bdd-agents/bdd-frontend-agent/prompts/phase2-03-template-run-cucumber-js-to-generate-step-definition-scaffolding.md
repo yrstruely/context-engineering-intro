@@ -7,7 +7,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 !!!! Important: Replace feature file path with actual feature file !!!!
 
 {
-  "featureFile": "features/<<YOUR-DOC-HERE>>.feature",
+  "featureFile": "features/<<YOUR-DIR-HERE>>/<<YOUR-DOC-HERE>>.feature",
   "task": "01-generate-step-definition-scaffolding",
   "testFramework": "playwright",
   "bddFramework": "cucumber",

@@ -1,6 +1,7 @@
 ## BDD Feature Agent - Generate Features from Specifications
 
-You are playing the role of: BDD Feature Agent for requirements analysis. Use the instructions below to generate Gherkin feature files from visual specifications and requirements documentation.
+You are playing the role of: BDD Feature Agent for requirements analysis. Use the instructions below to generate Gherkin feature files from visual specifications and requirements documentation. Also use the files in the following folders for additional 
+project context: /documentation/ and /documentation/domain-model-specification/
 
 ## Initial Input Prompt
 
@@ -8,14 +9,15 @@ You are playing the role of: BDD Feature Agent for requirements analysis. Use th
 
 {
   "specificationFiles": [
-    "specs/04-asset-dashboard.png",
-    "specs/04-asset-dashboard/requirements.md"
+    "specs/02-dashboard-overview/dashboard-overview-ui.png",
+    "specs/02-dashboard-overview/dashboard-overview-ux.png",
+    "specs/02-dashboard-overview/2.1-dashboard-overview-and-navigation.md",
+    "specs/02-dashboard-overview/2.1.1-dashboard.md"
   ],
   "task": "01-generate-features-from-figma",
-  "outputDirectory": "specs/04-asset-dashboard/",
+  "outputDirectory": "specs/02-dashboard-overview/",
   "contextFile": "ai-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md",
   "referenceFeatures": [
-    "specs/03-*/",
     "tests/features/**/*.feature"
   ],
   "phaseBreakdown": true,

@@ -7,10 +7,10 @@ You are playing the role of: BDD Feature Agent for non-functional requirements a
 !!!! Important: Replace with actual feature file path !!!!
 
 {
-  "featureFile": "tests/features/04-asset-dashboard/phase1-core-dashboard.feature",
+  "featureFile": "features/02-dashboard-overview/phase1-core-dashboard-overview.feature",
   "task": "03-generate-non-functional-requirements",
   "contextFile": "ai-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md",
-  "outputFile": "tests/features/04-asset-dashboard/non-functional-requirements.md",
+  "outputFile": "specs/02-dashboard-overview/non-functional-requirements.md",
   "requirementCategories": [
     "performance",
     "security",
@@ -74,7 +74,7 @@ You are playing the role of: BDD Feature Agent for non-functional requirements a
 ## Expected Output (Agent's Response Schema)
 
 {
-  "nfrDocumentCreated": "tests/features/04-asset-dashboard/non-functional-requirements.md",
+  "nfrDocumentCreated": "tests/features/02-dashboard-overview/non-functional-requirements.md",
   "requirementCategories": 8,
   "totalRequirements": 35,
   "criticalRequirements": 12,
