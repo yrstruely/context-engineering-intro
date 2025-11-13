@@ -11,7 +11,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Validat
   "phase": "3-pact-contract-validation",
   "mswHandlersDirectory": "test/msw/handlers/",
   "pactDirectory": "test/pact/pacts/",
-  "bffeSpec": "specs/<<YOUR-FEATURE-FOLDER-HERE>>/bffe-spec.md",
+  "bffeSpec": "specs/02-dashboard-overview/bffe-spec.md",
   "command": "npm run pact:validate"
 }
 
@@ -28,7 +28,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Validat
    - Note sync status for each interaction
 
 3. **Cross-Validate Against BFFE Spec**
-   - **Read BFFE spec** from `specs/<<YOUR-FEATURE-FOLDER-HERE>>/bffe-spec.md`
+   - **Read BFFE spec** from `specs/02-dashboard-overview/bffe-spec.md`
    - **Compare Pact contracts with BFFE spec**:
      - Endpoint paths match BFFE spec
      - Request parameters match BFFE spec

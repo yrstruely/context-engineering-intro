@@ -11,7 +11,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Generat
   "phase": "3-pact-contract-generation",
   "mswHandlersDirectory": "test/msw/handlers/",
   "pactOutputDirectory": "test/pact/pacts/",
-  "bffeSpec": "specs/<<YOUR-FEATURE-FOLDER-HERE>>/bffe-spec.md",
+  "bffeSpec": "specs/02-dashboard-overview/bffe-spec.md",
   "command": "npm run pact:generate"
 }
 
@@ -35,7 +35,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Generat
    - Confirm all MSW handlers are represented
 
 4. **Cross-Check Against BFFE Spec**
-   - **Read BFFE spec** from `specs/<<YOUR-FEATURE-FOLDER-HERE>>/bffe-spec.md`
+   - **Read BFFE spec** from `specs/02-dashboard-overview/bffe-spec.md`
    - **Verify endpoint paths match** BFFE spec exactly
    - **Verify response schemas match** BFFE spec definitions
    - **Note any discrepancies** between Pact contracts and BFFE spec

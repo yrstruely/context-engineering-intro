@@ -7,8 +7,8 @@ You are playing the role of: BDD Frontend Agent - Phase 1 (MSW Handler Creation)
 !!!! Important: Replace feature file path and BFFE spec path with actual paths !!!!
 
 {
-  "featureFile": "features/<<YOUR-FEATURE-FOLDER-HERE>>/phase1-core-*.feature",
-  "bffeSpec": "specs/<<YOUR-FEATURE-FOLDER-HERE>>/bffe-spec.md",
+  "featureFile": "features/02-dashboard-overview/phase1-core-*.feature",
+  "bffeSpec": "specs/02-dashboard-overview/bffe-spec.md",
   "task": "phase1-01-analyze-scenarios-for-api-requirements",
   "phase": "1-msw-handler-creation",
   "testFramework": "playwright",
@@ -22,7 +22,7 @@ You are playing the role of: BDD Frontend Agent - Phase 1 (MSW Handler Creation)
 
 1. **Read Feature File and BFFE Spec**
    - Read the specified feature file from `features/` directory
-   - **Read the BFFE spec** from `specs/<<YOUR-FEATURE-FOLDER-HERE>>/bffe-spec.md`
+   - **Read the BFFE spec** from `specs/02-dashboard-overview/bffe-spec.md`
    - Parse all scenarios and scenario outlines
    - Identify Given/When/Then steps
 
@@ -180,7 +180,7 @@ Create `temp/api-requirements-analysis.md` with this structure:
 
 **Critical**: Always reference the BFFE spec when analyzing scenarios!
 
-**Location**: `specs/<<YOUR-FEATURE-FOLDER-HERE>>/bffe-spec.md`
+**Location**: `specs/02-dashboard-overview/bffe-spec.md`
 - Example: `specs/02-dashboard-overview/bffe-spec.md` for Dashboard feature
 
 **Purpose**:

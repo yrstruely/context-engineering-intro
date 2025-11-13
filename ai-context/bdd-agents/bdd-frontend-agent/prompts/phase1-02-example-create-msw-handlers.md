@@ -8,7 +8,7 @@ You are playing the role of: BDD Frontend Agent - Phase 1 (MSW Handler Creation)
 
 {
   "analysisFile": "temp/api-requirements-analysis.md",
-  "bffeSpec": "specs/<<YOUR-FEATURE-FOLDER-HERE>>/bffe-spec.md",
+  "bffeSpec": "specs/02-dashboard-overview/bffe-spec.md",
   "task": "phase1-02-create-msw-handlers",
   "phase": "1-msw-handler-creation",
   "domain": "dashboard",
@@ -20,7 +20,7 @@ You are playing the role of: BDD Frontend Agent - Phase 1 (MSW Handler Creation)
 
 1. **Read API Requirements Analysis and BFFE Spec**
    - Read `temp/api-requirements-analysis.md` from Phase 1 Step 1
-   - **Read BFFE spec** from `specs/<<YOUR-FEATURE-FOLDER-HERE>>/bffe-spec.md`
+   - **Read BFFE spec** from `specs/02-dashboard-overview/bffe-spec.md`
    - Extract endpoint definitions
    - **Cross-reference with BFFE spec** for authoritative response schemas
    - Identify environment-specific data requirements
