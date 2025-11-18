@@ -19,7 +19,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 ## BDD Frontend Agent Behavior (Step-by-Step)
 
 1. **Run Cucumber.js Dry Run**
-   - Execute: `npm run test:e2e:dry` or `npx cucumber-js --dry-run --format progress`
+   - Execute: `export NODE_OPTIONS='--import=tsx' && npx cucumber-js features/<<YOUR-DIR-HERE>>/<<YOUR-DOC-HERE>>.feature --dry-run --format progress --import 'features/support/**/*.ts' --import 'features/step-definitions/**/*.ts'`
    - This will identify undefined step definitions
    - Capture the output showing missing steps
 

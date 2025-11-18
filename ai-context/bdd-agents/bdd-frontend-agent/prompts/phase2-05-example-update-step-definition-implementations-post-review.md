@@ -165,7 +165,7 @@ Given('Alice has {int} applications', async function (count: any) {
 Given('Alice has {int} applications', async function (this: ICustomWorld, count: number) {
   if (!this.page) throw new Error('Page not initialized')
 
-  const response = await this.page.request.get('http://localhost:3000/api/applications')
+  const response = await this.page.request.get('${baseUrl}/api/applications')
   expect(response.status()).toBe(200)
 
   const result: ApiResponse<PatentApplication[]> = await response.json()

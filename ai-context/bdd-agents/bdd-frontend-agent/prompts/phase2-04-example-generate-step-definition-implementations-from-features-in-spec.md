@@ -128,7 +128,7 @@ Given('Alice has submitted patent applications', async function (this: ICustomWo
   if (!this.page) throw new Error('Page not initialized')
 
   // Fetch from mock API
-  const response = await this.page.request.get('http://localhost:3000/api/applications?type=patent')
+  const response = await this.page.request.get('${baseUrl}/api/applications?type=patent')
   expect(response.status()).toBe(200)
 
   const result = await response.json()
@@ -143,7 +143,7 @@ Given('Alice has submitted patent applications', async function (this: ICustomWo
 When('Alice navigates to the patent registration dashboard', async function (this: ICustomWorld) {
   if (!this.page) throw new Error('Page not initialized')
 
-  await this.page.goto('http://localhost:3000/dashboard/patent')
+  await this.page.goto('${baseUrl}/dashboard/patent')
   await this.page.waitForLoadState('networkidle')
 })
 ```

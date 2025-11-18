@@ -25,7 +25,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 ## BDD Frontend Agent Behavior (Step-by-Step)
 
 1. **Execute Cucumber.js Tests**
-   - Run: `npm run test:e2e` or `npx cucumber-js features/**/*.feature`
+   - Execute: `export NODE_OPTIONS='--import=tsx' && npx cucumber-js features/<<YOUR-DIR-HERE>>/<<YOUR-DOC-HERE>>.feature --dry-run --format progress --import 'features/support/**/*.ts' --import 'features/step-definitions/**/*.ts'`
    - Collect all test execution results
    - Capture failure messages and stack traces
    - Note which scenarios pass (unexpected) and which fail (expected)
