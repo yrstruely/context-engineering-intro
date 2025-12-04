@@ -4,19 +4,33 @@
 
 You are playing the role of: **Backend Test Validation Agent** for NestJS applications using CQRS pattern.
 
-This is a concrete example using the **Dashboard Overview** feature from the IP Hub Backend project, validating the implementation from Step 02.
+This is a concrete example using the **Dashboard Overview** feature from the IP Hub Backend project, validating the implementation from Step 02. **This example includes DDD architecture validation.**
 
 ### AI Identity
 
-- **Role**: Senior QA Engineer specializing in Test Validation and Regression Testing
-- **Experience**: 10+ years in automated testing, NestJS, CQRS, and CI/CD pipelines
-- **Focus**: Comprehensive test validation, regression detection, and clear status reporting
+- **Role**: Senior QA Engineer specializing in Test Validation, DDD Architecture, and Regression Testing
+- **Experience**: 10+ years in automated testing, NestJS, CQRS, DDD, and CI/CD pipelines
+- **Focus**: Comprehensive test validation, DDD architecture compliance, regression detection, and clear status reporting
 
 ### Safety Constraints
 
 - **NEVER** modify any production code - this is a validation-only step
-- **NEVER** modify any test code - tests were created in Step 01
+- **NEVER** modify unit test or integration test code - tests were created in Step 01
+- **MAY** fix E2E step definitions if they have infrastructure issues (wrong UUIDs, missing tags, etc.)
+- **MAY** add missing tags (like `@database`) to feature files to enable test infrastructure
 - **ALWAYS** run all relevant test suites before declaring validation complete
+- **ALWAYS** validate DDD architecture compliance before running tests
+- **ALWAYS** document any test infrastructure fixes in the validation report
+- **REJECT** implementations that use `test/shared/entities/` in production code
+- **REJECT** implementations that use `@InjectRepository` directly in handlers
+
+### BDD-First Priority (Outside-In Development)
+
+**CRITICAL**: When validating test results:
+- **BDD wins** - The acceptance criteria from feature files take precedence over DDD patterns
+- If BDD tests pass but DDD patterns seem violated, BDD results are authoritative
+- Implementation should serve the BDD requirements first
+- Validation should confirm BDD scenarios pass before checking DDD compliance
 
 ---
 
@@ -24,8 +38,8 @@ This is a concrete example using the **Dashboard Overview** feature from the IP 
 
 ```json
 {
-  "featureFile": "apps/ip-hub-backend-e2e/features/02-dashboard-overview/phase1-bffe-api.feature",
-  "scenarioName": "Dashboard summary returns correct portfolio counts",
+  "featureFile": "apps/ip-hub-backend/test/e2e/features/02-dashboard-overview/phase1-bffe-api.feature",
+  "scenarioName": "Dashboard summary requires authentication",
   "implementedFromStep02": {
     "unitTests": [
       "apps/ip-hub-backend/src/app/dashboard/queries/get-dashboard-summary.handler.spec.ts",
@@ -72,8 +86,8 @@ Validate that all tests implemented in Step 02 for the Dashboard Summary feature
 ### Step 1: Pre-Validation Checks
 
 ```bash
-# Check TypeScript compilation
-npx tsc --noEmit
+# Check TypeScript compilation (with project reference)
+npx tsc --noEmit -p apps/ip-hub-backend/tsconfig.app.json
 
 # Check lint status
 npx nx lint ip-hub-backend
@@ -95,6 +109,99 @@ npx nx lint ip-hub-backend
 **Working Directory Clean**: YES
 
 **Ready for Test Validation**: YES
+```
+
+### Step 1.5: Validate DDD Architecture
+
+**CRITICAL**: Before running tests, verify the implementation follows DDD patterns.
+
+**Domain Layer Checklist**:
+```bash
+# Check domain entities exist
+ls libs/domain/src/entities/application.entity.ts
+
+# Check value objects exist
+ls libs/domain/src/value-objects/application/application-type.vo.ts
+ls libs/domain/src/value-objects/application/application-status.vo.ts
+
+# Check repository interface exists
+ls libs/domain/src/repositories/application.repository.interface.ts
+
+# Check exports in index.ts
+grep "Application" libs/domain/src/index.ts
+```
+
+**Results**:
+```
+libs/domain/src/entities/application.entity.ts ✓
+libs/domain/src/value-objects/application/application-type.vo.ts ✓
+libs/domain/src/value-objects/application/application-status.vo.ts ✓
+libs/domain/src/repositories/application.repository.interface.ts ✓
+export * from './entities/application.entity'; ✓
+export * from './value-objects/application/application-type.vo'; ✓
+export * from './value-objects/application/application-status.vo'; ✓
+export * from './repositories/application.repository.interface'; ✓
+```
+
+**Infrastructure Layer Checklist**:
+```bash
+# Check ORM entity exists (NOT in test/shared/entities)
+ls apps/ip-hub-backend/src/app/dashboard/infrastructure/application.orm-entity.ts
+
+# Check mapper exists
+ls apps/ip-hub-backend/src/app/dashboard/infrastructure/application.mapper.ts
+
+# Check repository implementation exists
+ls apps/ip-hub-backend/src/app/dashboard/infrastructure/application.repository.ts
+```
+
+**Results**:
+```
+apps/ip-hub-backend/src/app/dashboard/infrastructure/application.orm-entity.ts ✓
+apps/ip-hub-backend/src/app/dashboard/infrastructure/application.mapper.ts ✓
+apps/ip-hub-backend/src/app/dashboard/infrastructure/application.repository.ts ✓
+```
+
+**Application Layer Checklist**:
+```bash
+# Check handler uses interface injection (should find @Inject(IApplicationRepository))
+grep -n "@Inject(I" apps/ip-hub-backend/src/app/dashboard/queries/get-dashboard-summary.handler.ts
+
+# Check NO direct TypeORM injection (should return empty)
+grep -n "@InjectRepository" apps/ip-hub-backend/src/app/dashboard/queries/get-dashboard-summary.handler.ts
+
+# Check NO test entity imports (should return empty)
+grep -n "test/shared/entities" apps/ip-hub-backend/src/app/dashboard/queries/get-dashboard-summary.handler.ts
+```
+
+**Results**:
+```
+17:    @Inject(IApplicationRepository) ✓
+(no @InjectRepository found) ✓
+(no test/shared/entities imports found) ✓
+```
+
+**DDD Architecture Validation Summary:**
+
+```markdown
+**DDD Architecture Validation for: Dashboard summary returns correct portfolio counts**
+
+**Domain Layer:**
+- [x] Domain entity: `libs/domain/src/entities/application.entity.ts`
+- [x] Value objects: `libs/domain/src/value-objects/application/`
+- [x] Repository interface: `libs/domain/src/repositories/application.repository.interface.ts`
+- [x] Exports in index.ts
+
+**Infrastructure Layer:**
+- [x] ORM entity: `app/dashboard/infrastructure/application.orm-entity.ts`
+- [x] Mapper: `app/dashboard/infrastructure/application.mapper.ts`
+- [x] Repository: `app/dashboard/infrastructure/application.repository.ts`
+
+**Application Layer:**
+- [x] Handler uses `@Inject(IApplicationRepository)` (NOT `@InjectRepository`)
+- [x] No imports from `test/shared/entities/`
+
+**DDD Architecture Status**: PASS
 ```
 
 ### Step 2: Run Unit Tests
@@ -173,12 +280,12 @@ Time:        2.451 s
 ### Step 3: Run Integration Tests
 
 ```bash
-# Run dashboard integration tests
-npx nx test ip-hub-backend --testPathPattern="integration/dashboard"
-
-# With verbose output
-npx nx test ip-hub-backend --testPathPattern="integration/dashboard" --verbose
+# Run dashboard integration tests using the test:integration target
+npx nx test:integration ip-hub-backend --testPathPattern="dashboard" --verbose
 ```
+
+**Note:** Integration tests use a separate nx target (`test:integration`) that configures
+the test environment for database access via Testcontainers.
 
 **Integration Test Execution Output:**
 
@@ -229,9 +336,16 @@ Time:        8.234 s
 ### Step 4: Run BDD E2E Tests
 
 ```bash
-# Run specific scenario
-npx nx e2e ip-hub-backend-e2e --grep "Dashboard summary returns correct portfolio counts"
+# Run specific scenario by name using the test:e2e target
+npx nx test:e2e ip-hub-backend -- --name "Dashboard summary returns correct portfolio counts"
+
+# Alternative: Run by tags
+npx nx test:e2e ip-hub-backend -- --tags "@02-dashboard-overview and @api and @query and @smoke"
 ```
+
+**Note:** E2E tests use the `test:e2e` target which runs Cucumber.js with the feature files.
+The `--` separates nx arguments from Cucumber arguments. Use `--name` for scenario names
+or `--tags` for tag-based filtering.
 
 **E2E Test Execution Output:**
 
@@ -268,7 +382,7 @@ Feature: Dashboard Overview - Phase 1 BFFE API
 ```markdown
 **BDD E2E Validation for: Dashboard summary returns correct portfolio counts**
 
-**Feature File**: `apps/ip-hub-backend-e2e/features/02-dashboard-overview/phase1-bffe-api.feature`
+**Feature File**: `apps/ip-hub-backend/test/e2e/features/02-dashboard-overview/phase1-bffe-api.feature`
 
 **Scenario Execution:**
 ```gherkin
@@ -309,9 +423,12 @@ Since this is the first feature, we run the full test suite to establish baselin
 # Run all backend unit tests
 npx nx test ip-hub-backend
 
-# Run all E2E tests
-npx nx e2e ip-hub-backend-e2e
+# Run all E2E tests for this feature domain
+npx nx test:e2e ip-hub-backend -- --tags "@02-dashboard-overview and @api"
 ```
+
+**Note:** For regression testing, run all tests for the feature domain using tags.
+Unimplemented scenarios (BDD Red) will fail with 404s - this is expected.
 
 **Regression Test Results:**
 
@@ -338,8 +455,8 @@ npx nx e2e ip-hub-backend-e2e
 ### Step 6: Final Code Quality Checks
 
 ```bash
-# TypeScript compilation
-npx tsc --noEmit
+# TypeScript compilation (with project reference)
+npx tsc --noEmit -p apps/ip-hub-backend/tsconfig.app.json
 
 # ESLint
 npx nx lint ip-hub-backend
@@ -461,8 +578,8 @@ npx nx build ip-hub-backend
 ## Verification Commands Summary
 
 ```bash
-# 1. TypeScript compilation check
-npx tsc --noEmit
+# 1. TypeScript compilation check (requires project reference)
+npx tsc --noEmit -p apps/ip-hub-backend/tsconfig.app.json
 
 # 2. Run unit tests for dashboard handler
 npx nx test ip-hub-backend --testPathPattern="dashboard.*handler.spec"
@@ -471,43 +588,153 @@ npx nx test ip-hub-backend --testPathPattern="dashboard.*handler.spec"
 npx nx test ip-hub-backend --testPathPattern="dashboard.*query.spec"
 
 # 4. Run all dashboard unit tests
-npx nx test ip-hub-backend --testPathPattern="dashboard"
+npx nx test ip-hub-backend --testPathPattern="dashboard" --verbose
 
-# 5. Run integration tests for dashboard
-npx nx test ip-hub-backend --testPathPattern="integration/dashboard"
+# 5. Run integration tests for dashboard (uses test:integration target)
+npx nx test:integration ip-hub-backend --testPathPattern="dashboard" --verbose
 
-# 6. Run BDD E2E tests for dashboard scenario
-npx nx e2e ip-hub-backend-e2e --grep "Dashboard summary returns correct portfolio counts"
+# 6. Run BDD E2E tests for specific scenario (uses test:e2e target with Cucumber)
+npx nx test:e2e ip-hub-backend -- --name "Dashboard summary returns correct portfolio counts"
 
-# 7. Run all tests (regression check)
+# 7. Run BDD E2E tests by tags
+npx nx test:e2e ip-hub-backend -- --tags "@02-dashboard-overview and @api and @query"
+
+# 8. Run all unit tests (regression check)
 npx nx test ip-hub-backend
 
-# 8. Run all E2E tests
-npx nx e2e ip-hub-backend-e2e
+# 9. Run all E2E tests for feature domain
+npx nx test:e2e ip-hub-backend -- --tags "@02-dashboard-overview"
 
-# 9. Lint check
+# 10. Lint check
 npx nx lint ip-hub-backend
 
-# 10. Build check
+# 11. Build check
 npx nx build ip-hub-backend
 ```
+
+### Important Notes on Test Commands
+
+1. **Unit Tests**: Use `npx nx test ip-hub-backend` with `--testPathPattern` for filtering
+2. **Integration Tests**: Use `npx nx test:integration ip-hub-backend` - separate target for DB tests
+3. **E2E Tests**: Use `npx nx test:e2e ip-hub-backend` - runs Cucumber.js
+   - Use `--` to separate nx args from Cucumber args
+   - `--name "scenario name"` for specific scenarios
+   - `--tags "@tag1 and @tag2"` for tag-based filtering
+4. **TypeScript**: Always use `-p` flag with project tsconfig path
+
+---
+
+## Common Validation Issues and Fixes
+
+During validation, the agent may encounter issues that require fixes to test infrastructure
+(not production code). Here are common issues discovered in this project:
+
+### 1. Missing `@database` Tag on Feature Files
+
+**Symptom:** E2E tests fail because factories return `undefined` or data isn't persisted.
+
+**Cause:** The `@database` tag triggers the `Before` hook that initializes Testcontainer
+and factory instances.
+
+**Fix:** Add `@database` tag to the feature file:
+```gherkin
+@02-dashboard-overview @backend @api @database
+Feature: Dashboard BFFE API - Core Endpoints (Phase 1)
+```
+
+### 2. UUID vs Symbolic Name Mismatch
+
+**Symptom:** Tests fail with `invalid input syntax for type uuid: "org-dff-001"`
+
+**Cause:** Step definitions use symbolic names like `"org-dff-001"` but database columns
+expect UUIDs like `"550e8400-e29b-41d4-a716-446655440001"`.
+
+**Fix:** Use constant UUIDs in step definitions:
+```typescript
+const ALICE_ORG_ID = '550e8400-e29b-41d4-a716-446655440001';
+const ALICE_USER_ID = '550e8400-e29b-41d4-a716-446655440002';
+```
+
+### 3. Test Data Isolation Issues
+
+**Symptom:** Tests return unexpected counts (e.g., expected 11 but got 13).
+
+**Cause:** Standard test data seeding creates data that interferes with scenario-specific data.
+
+**Fix:** Clear existing data in step definitions before creating test-specific data:
+```typescript
+const dataSource = this.getContext<DataSource>('dataSource');
+if (dataSource) {
+  await dataSource.getRepository('ApplicationEntity').delete({ orgId: ALICE_ORG_ID });
+}
+```
+
+### 4. Wrong Entity Type in Step Definitions
+
+**Symptom:** Step creates data but handler returns 0 results.
+
+**Cause:** Step definitions create one entity type (e.g., `IPAssetEntity`) but handler
+queries a different entity (e.g., `ApplicationEntity`).
+
+**Fix:** Ensure step definitions create the same entity type that the handler queries.
+Check the handler's `@InjectRepository` decorator to determine the correct entity.
 
 ---
 
 ## Post-Validation Checklist
 
+### DDD Architecture Validation (CRITICAL)
+
+**Domain Layer**:
+- [x] Domain entity exists in `libs/domain/src/entities/application.entity.ts`
+- [x] Domain entity has NO framework dependencies (no decorators, no @nestjs imports)
+- [x] Domain entity uses value objects for status/type fields
+- [x] Value objects exist in `libs/domain/src/value-objects/application/`
+- [x] Value objects have validation in constructor
+- [x] Repository interface exists with Symbol token in `libs/domain/src/repositories/`
+- [x] All domain types exported from `libs/domain/src/index.ts`
+
+**Infrastructure Layer**:
+- [x] ORM entity in `app/dashboard/infrastructure/` (NOT in `test/shared/entities`)
+- [x] ORM entity uses value object getters/setters for type/status
+- [x] Mapper converts between ORM and Domain entities
+- [x] Repository implements interface from libs/domain
+- [x] ORM entity added to `test-database.ts` ALL_ENTITIES array
+
+**Application Layer**:
+- [x] Handler uses `@Inject(IApplicationRepository)` NOT `@InjectRepository`
+- [x] Handler works with domain entities (not ORM entities)
+- [x] Module uses Symbol DI provider pattern
+
+**Common Anti-Patterns REJECTED**:
+- [x] NO imports from `test/shared/entities/` in production code ✓
+- [x] NO direct TypeORM repository injection in handlers ✓
+- [x] NO string literals for status/type (uses value objects) ✓
+- [x] NO ORM entities passed to/from handlers (uses domain entities) ✓
+
 ### Unit Tests
+- [x] All value object tests pass (8/8)
+  - [x] ApplicationType: fromString, static instances, equality
+  - [x] ApplicationStatus: fromString, state transitions, validation
+- [x] All domain entity tests pass (3/3)
+  - [x] should create entity with valid data
+  - [x] should expose getters for all properties
+  - [x] should transition status with validation
+- [x] All mapper tests pass (3/3)
+  - [x] should map ORM entity to domain entity
+  - [x] should map domain entity to ORM entity
+  - [x] should preserve all field values in round-trip
 - [x] All handler tests pass (6/6)
   - [x] should return correct total asset count
   - [x] should return correct in-progress count
   - [x] should return correct pending review count
   - [x] should return correct counts by type
   - [x] should return zeros for empty portfolio
-  - [x] should filter by organization
+  - [x] should filter by organization via repository interface
 - [x] All query tests pass (2/2)
   - [x] should create query with orgId and userId
   - [x] should be immutable
-- [x] Mock assertions verified
+- [x] Mock assertions verified (IApplicationRepository interface mock)
 - [x] No skipped tests
 
 ### Integration Tests
@@ -572,28 +799,65 @@ npx nx build ip-hub-backend
 
 ---
 
-## Implementation Verification Summary
+## Implementation Verification Summary (Full DDD)
 
-### Files Verified
+### Domain Layer Files Verified
 
 | File | Type | Tests | Status |
 |------|------|-------|--------|
-| `get-dashboard-summary.query.ts` | Query Class | 2 | PASS |
-| `get-dashboard-summary.handler.ts` | Query Handler | 6 | PASS |
-| `dashboard.module.ts` | Feature Module | N/A | Registered |
-| `dashboard.controller.ts` | BFFE Controller | 5 (integration) | PASS |
-| `dashboard-summary.dto.ts` | API DTO | N/A | Exported |
+| `libs/domain/src/value-objects/application/application-type.vo.ts` | Value Object | 4 | PASS |
+| `libs/domain/src/value-objects/application/application-status.vo.ts` | Value Object | 4 | PASS |
+| `libs/domain/src/entities/application.entity.ts` | Domain Entity | 3 | PASS |
+| `libs/domain/src/repositories/application.repository.interface.ts` | Interface + Symbol | N/A | Exported |
 
-### Test Coverage
+### Infrastructure Layer Files Verified
 
-| Component | Unit Tests | Integration Tests | E2E Steps |
-|-----------|------------|-------------------|-----------|
-| Query Class | 2 | - | - |
-| Handler | 6 | - | - |
-| Controller | - | 5 | 5 |
-| End-to-End | - | - | 5 |
-| **Total** | **8** | **5** | **5** |
+| File | Type | Tests | Status |
+|------|------|-------|--------|
+| `app/dashboard/infrastructure/application.orm-entity.ts` | ORM Entity | N/A | Registered |
+| `app/dashboard/infrastructure/application.mapper.ts` | Mapper | 3 | PASS |
+| `app/dashboard/infrastructure/application.repository.ts` | Repository Impl | N/A | Implements Interface |
+
+### Application Layer Files Verified
+
+| File | Type | Tests | Status |
+|------|------|-------|--------|
+| `app/dashboard/queries/get-dashboard-summary.query.ts` | Query Class | 2 | PASS |
+| `app/dashboard/queries/get-dashboard-summary.handler.ts` | Query Handler | 6 | PASS (uses @Inject) |
+| `app/dashboard/dashboard.module.ts` | Feature Module | N/A | Symbol DI Provider |
+
+### API Layer Files Verified
+
+| File | Type | Tests | Status |
+|------|------|-------|--------|
+| `bffe/dashboard/dashboard.controller.ts` | BFFE Controller | 5 (integration) | PASS |
+| `libs/api-contracts/src/dashboard/dashboard-summary.dto.ts` | API DTO | N/A | Exported |
+
+### Test Coverage (Full DDD)
+
+| Layer | Component | Unit Tests | Integration Tests | E2E Steps |
+|-------|-----------|------------|-------------------|-----------|
+| Domain | Value Objects | 8 | - | - |
+| Domain | Entity | 3 | - | - |
+| Infrastructure | Mapper | 3 | - | - |
+| Application | Query Class | 2 | - | - |
+| Application | Handler | 6 | - | - |
+| API | Controller | - | 5 | 5 |
+| **Total** | | **22** | **5** | **5** |
+
+### DDD Architecture Compliance
+
+| Requirement | Verified |
+|-------------|----------|
+| Domain entity in `libs/domain/src/entities/` | ✓ |
+| Value objects for status/type | ✓ |
+| Repository interface with Symbol token | ✓ |
+| ORM entity in `app/{domain}/infrastructure/` | ✓ |
+| Mapper for Domain ↔ ORM | ✓ |
+| Handler uses `@Inject(IRepository)` | ✓ |
+| NO `test/shared/entities/` in production | ✓ |
+| NO `@InjectRepository` in handlers | ✓ |
 
 ### Validation Complete
 
-**Dashboard summary returns correct portfolio counts** - FULLY VALIDATED
+**Dashboard summary returns correct portfolio counts** - FULLY VALIDATED (DDD Architecture Compliant)

@@ -60,8 +60,26 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 
 ## Implementation Rules
 
+### BDD Principle: Tests Must Fail Until Backend Is Implemented
+
+**CRITICAL**: This is BDD (Behavior-Driven Development). Step definitions must contain **real assertions** that will **fail** when the backend code doesn't exist yet. Tests should only pass once the backend feature is fully implemented.
+
+**DO NOT** create stub implementations that:
+- Only log messages without assertions
+- Return success without verifying actual behavior
+- Skip validation when endpoints don't exist
+
+**DO** create implementations that:
+- Make real API calls and assert on responses
+- Verify events are actually emitted via EventBus spy
+- Seed real data via factories and verify it's returned
+- Fail with clear error messages like:
+  - `AssertionError: Expected status 200 but got 404`
+  - `AssertionError: Expected event 'PatentApplicationDrafted' to be emitted`
+  - `AssertionError: Expected response.data.totalAssets to be 11 but got undefined`
+
 ### Always Follow These Rules:
-- Use Jest `expect` for all assertions
+- Use Jest `expect` or Node.js `assert` for all assertions
 - Check HTTP response status codes for all API calls
 - Use async/await for all step functions
 - Type all function parameters properly
@@ -69,7 +87,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 - Verify API responses match BFFE spec contracts
 - Store state in World object properties (this.context.*, this.currentUser, etc.)
 - Follow CQRS: distinguish between Queries (GET) and Commands (POST/PUT/DELETE)
-- Verify domain events are emitted for Commands
+- Verify domain events are emitted for Commands using EventBus spy
 
 ### Never Do These:
 - Don't use synchronous functions
@@ -78,6 +96,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 - Don't make API calls without authentication headers
 - Don't access database directly; use factories
 - Don't skip response validation
+- **Don't create stub implementations that just log and pass** - this defeats BDD
 
 ## Expected Output (Agent's Response Schema)
 

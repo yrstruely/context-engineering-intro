@@ -62,7 +62,7 @@ Use the instructions in `workflow-context/bdd-agents/bdd-feature-agent/bdd-agent
 Create separate feature files for each category:
 
 #### A. BFFE API Features
-Test the Backend-For-Frontend API layer using HTTP calls (axios/supertest):
+Test the Backend-For-Frontend API layer using HTTP calls (axios):
 - Request/response validation
 - Authentication and authorization
 - Error handling and status codes
@@ -142,7 +142,7 @@ Scenario: PatentApplicationDrafted event is emitted when creating a patent
 | `@integration` | Cross-service tests | Service orchestration |
 | `@performance` | Performance tests | Response time, throughput |
 | `@security` | Security tests | Auth, authz, input validation |
-| `@nfr` | Non-functional requirements | Quality attribute tests |
+| `@non-functional` | Non-functional requirements | Quality attribute tests |
 
 ### 6. Map Frontend to Backend Scenarios
 
@@ -684,11 +684,11 @@ Feature: Dashboard Domain Events (Phase 1)
 # 4. Cross-DC Replication - How are events replicated across regions?
 ```
 
-### File: `specs/02-dashboard-overview/backend/phase1-nfr.feature`
+### File: `specs/02-dashboard-overview/backend/phase1-non-functional.feature`
 
 ```gherkin
-# specs/02-dashboard-overview/backend/phase1-nfr.feature
-@02-dashboard-overview @backend @nfr
+# specs/02-dashboard-overview/backend/phase1-non-functional.feature
+@02-dashboard-overview @backend @non-functional
 Feature: Dashboard Non-Functional Requirements (Phase 1)
   In order to provide a reliable and secure dashboard service
   As the IP Hub backend system
@@ -703,7 +703,7 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
 
   Rule: Performance requirements are met under load
 
-    @nfr @performance @critical
+    @non-functional @performance @critical
     Scenario: Dashboard summary API meets response time SLA
       Given the system is under normal load (100 concurrent users)
       When 1000 requests are made to GET /dashboard/summary over 60 seconds
@@ -711,14 +711,14 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
       And 99% of responses should complete within 300ms
       And no requests should fail due to timeout
 
-    @nfr @performance
+    @non-functional @performance
     Scenario: Applications list API handles pagination efficiently
       Given a user has 500 applications
       When requesting the first page of 20 applications
       Then the response should complete within 200ms
       And memory usage should remain stable
 
-    @nfr @performance @load
+    @non-functional @performance @load
     Scenario: System handles concurrent dashboard requests
       Given 200 concurrent users accessing the dashboard
       When each user makes 10 requests per minute
@@ -727,13 +727,13 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
 
   Rule: Security requirements protect sensitive data
 
-    @nfr @security @critical
+    @non-functional @security @critical
     Scenario: All API endpoints require valid authentication
       When any dashboard API endpoint is called without a valid token
       Then the response status should be 401
       And no sensitive data should be exposed in the error
 
-    @nfr @security @critical
+    @non-functional @security @critical
     Scenario: API prevents cross-tenant data access
       Given Alice belongs to organization "org-001"
       And Bob belongs to organization "org-002"
@@ -741,7 +741,7 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
       Then the response should only contain Alice's data
       And no data from org-002 should be visible
 
-    @nfr @security
+    @non-functional @security
     Scenario: Input validation prevents injection attacks
       When a request is made with malicious input:
         | field       | value                              |
@@ -750,14 +750,14 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
       And the database should remain unaffected
       And the malicious input should be logged for security review
 
-    @nfr @security
+    @non-functional @security
     Scenario: API rate limiting prevents abuse
       Given rate limits are configured at 100 requests per minute
       When a client makes 150 requests within 1 minute
       Then requests beyond the limit should receive status 429
       And the client should receive a "Retry-After" header
 
-    @nfr @security @audit
+    @non-functional @security @audit
     Scenario: All sensitive operations are logged for audit
       When Alice views the dashboard
       And Alice dismisses an alert
@@ -770,13 +770,13 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
 
   Rule: Reliability requirements ensure service availability
 
-    @nfr @reliability @critical
+    @non-functional @reliability @critical
     Scenario: System maintains 99.9% uptime
       Given the monitoring period is 30 days
       When uptime is measured
       Then total downtime should be less than 43.2 minutes
 
-    @nfr @reliability
+    @non-functional @reliability
     Scenario: Graceful degradation when dependent service fails
       Given the notifications service is unavailable
       When a request is made to GET /dashboard/summary
@@ -784,7 +784,7 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
       And the alerts section should indicate "temporarily unavailable"
       And no 500 errors should be returned to clients
 
-    @nfr @reliability
+    @non-functional @reliability
     Scenario: Database connection failures are handled gracefully
       Given the database connection pool is exhausted
       When a request is made to GET /dashboard/summary
@@ -792,7 +792,7 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
       And the client should receive a "Retry-After" header
       And circuit breaker should activate after repeated failures
 
-    @nfr @reliability @recovery
+    @non-functional @reliability @recovery
     Scenario: System recovers from database restart
       Given the database is restarted
       When requests resume after restart
@@ -801,7 +801,7 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
 
   Rule: Data integrity requirements ensure accurate information
 
-    @nfr @data-integrity @critical
+    @non-functional @data-integrity @critical
     Scenario: Dashboard counts match actual database state
       Given the database contains:
         | table        | count |
@@ -812,7 +812,7 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
       Then totalAssets should equal the database count
       And counts by type should match database groupings
 
-    @nfr @data-integrity
+    @non-functional @data-integrity
     Scenario: Alert delivery is 100% reliable for critical deadlines
       Given a critical office action deadline is due in 14 days
       When the alerts are queried
@@ -821,14 +821,14 @@ Feature: Dashboard Non-Functional Requirements (Phase 1)
 
   Rule: Compliance requirements for legal and regulatory needs
 
-    @nfr @compliance @gdpr
+    @non-functional @compliance @gdpr
     Scenario: User data can be exported for GDPR requests
       Given Alice requests a data export
       When the export is generated
       Then all of Alice's data should be included
       And the export should be in a portable format (JSON/CSV)
 
-    @nfr @compliance @data-residency
+    @non-functional @compliance @data-residency
     Scenario: Data residency requirements are respected
       Given the platform operates in UAE
       When data is stored
@@ -855,7 +855,7 @@ After running this agent with the example inputs, you should have:
     "specs/02-dashboard-overview/backend/phase1-cqrs-commands.feature",
     "specs/02-dashboard-overview/backend/phase1-cqrs-queries.feature",
     "specs/02-dashboard-overview/backend/phase1-domain-events.feature",
-    "specs/02-dashboard-overview/backend/phase1-nfr.feature"
+    "specs/02-dashboard-overview/backend/phase1-non-functional.feature"
   ],
   "scenarioCount": 48,
   "coverageMapping": {
@@ -881,7 +881,7 @@ After running this agent with the example inputs, you should have:
 | **Language** | "Alice sees...", "Alice clicks..." | "The response contains...", "Event emitted..." |
 | **Tags** | @frontend, @ux | @backend, @api, @command, @query, @event |
 | **Assertions** | Visual elements, navigation | Status codes, response bodies, events |
-| **Test Runner** | Playwright, browser | Axios, supertest, database assertions |
+| **Test Runner** | Playwright, browser | Axios, database assertions |
 | **NFR Focus** | Accessibility, visual design | Performance, security, reliability |
 
 ## Best Practices

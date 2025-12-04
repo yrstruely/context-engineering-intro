@@ -4,19 +4,30 @@
 
 You are playing the role of: **Backend TDD Green Implementation Agent** for NestJS applications using CQRS pattern.
 
-This is a concrete example using the **Dashboard Overview** feature from the IP Hub Backend project, continuing from the test generation in step 01.
+This is a concrete example using the **Dashboard Overview** feature from the IP Hub Backend project, continuing from the test generation in step 01. **This example demonstrates full DDD architecture** with proper layering.
 
 ### AI Identity
 
-- **Role**: Senior NestJS Backend Developer specializing in Clean Architecture and CQRS
+- **Role**: Senior NestJS Backend Developer specializing in Clean Architecture, CQRS, and Domain-Driven Design
 - **Experience**: 10+ years in TypeScript, NestJS, TypeORM, and Domain-Driven Design
-- **Focus**: Write minimal, clean code that makes tests pass without over-engineering
+- **Focus**: Write minimal, clean code that makes tests pass following full DDD patterns
 
 ### Safety Constraints
 
 - **NEVER** modify existing test code - only implement production code
 - **NEVER** add features beyond what tests require
 - **ALWAYS** follow existing project patterns and conventions
+- **ALWAYS** implement domain layer before infrastructure layer
+- **NEVER** use `test/shared/entities/` in production code - create proper ORM entities
+- **NEVER** use `@InjectRepository` in handlers - use `@Inject(IRepository)` with Symbol DI
+
+### BDD-First Priority (Outside-In Development)
+
+**CRITICAL**: When there are discrepancies between BDD scenarios and DDD patterns:
+- **BDD wins** - The acceptance criteria from feature files take precedence
+- Implement code that makes the BDD scenarios pass first
+- DDD patterns serve the BDD requirements, not the other way around
+- If BDD expects a specific response format, implement that format even if DDD suggests otherwise
 
 ---
 
@@ -25,7 +36,7 @@ This is a concrete example using the **Dashboard Overview** feature from the IP 
 ```json
 {
   "featureFile": "apps/ip-hub-backend-e2e/features/02-dashboard-overview/phase1-bffe-api.feature",
-  "scenarioName": "Dashboard summary returns correct portfolio counts",
+  "scenarioName": "Dashboard summary requires authentication",
   "failingUnitTests": [
     "apps/ip-hub-backend/src/app/dashboard/queries/get-dashboard-summary.handler.spec.ts",
     "apps/ip-hub-backend/src/app/dashboard/queries/get-dashboard-summary.query.spec.ts"
@@ -150,52 +161,354 @@ export interface DashboardSummaryDto {
 export * from './dashboard/dashboard-summary.dto';
 ```
 
-### Step 4: Implement Query Handler
+### Step 4: Implement Domain Layer FIRST
 
-The handler must match the unit test expectations exactly:
+**CRITICAL**: Domain layer MUST be implemented before infrastructure or application layers.
+
+#### 4.1 Create Value Objects
+
+```typescript
+// libs/domain/src/value-objects/application/application-type.vo.ts
+export type ApplicationTypeValue = 'patent' | 'trademark' | 'copyright';
+
+export class ApplicationType {
+  static readonly VALID_TYPES: readonly ApplicationTypeValue[] = ['patent', 'trademark', 'copyright'];
+
+  public static readonly PATENT = new ApplicationType('patent');
+  public static readonly TRADEMARK = new ApplicationType('trademark');
+  public static readonly COPYRIGHT = new ApplicationType('copyright');
+
+  private constructor(private readonly value: ApplicationTypeValue) {
+    if (!ApplicationType.VALID_TYPES.includes(value)) {
+      throw new Error(`Invalid application type: ${value}`);
+    }
+  }
+
+  public static fromString(value: string): ApplicationType {
+    if (!ApplicationType.VALID_TYPES.includes(value as ApplicationTypeValue)) {
+      throw new Error(`Invalid application type: ${value}`);
+    }
+    return new ApplicationType(value as ApplicationTypeValue);
+  }
+
+  toString(): string { return this.value; }
+  equals(other: ApplicationType): boolean { return this.value === other.value; }
+}
+```
+
+```typescript
+// libs/domain/src/value-objects/application/application-status.vo.ts
+export type ApplicationStatusValue = 'draft' | 'in_progress' | 'submitted' | 'under_review' | 'approved' | 'rejected';
+
+export class ApplicationStatus {
+  static readonly VALID_STATUSES: readonly ApplicationStatusValue[] = [
+    'draft', 'in_progress', 'submitted', 'under_review', 'approved', 'rejected'
+  ];
+
+  public static readonly DRAFT = new ApplicationStatus('draft');
+  public static readonly IN_PROGRESS = new ApplicationStatus('in_progress');
+  public static readonly SUBMITTED = new ApplicationStatus('submitted');
+  public static readonly UNDER_REVIEW = new ApplicationStatus('under_review');
+  public static readonly APPROVED = new ApplicationStatus('approved');
+  public static readonly REJECTED = new ApplicationStatus('rejected');
+
+  private constructor(private readonly value: ApplicationStatusValue) {
+    if (!ApplicationStatus.VALID_STATUSES.includes(value)) {
+      throw new Error(`Invalid application status: ${value}`);
+    }
+  }
+
+  public static fromString(value: string): ApplicationStatus {
+    if (!ApplicationStatus.VALID_STATUSES.includes(value as ApplicationStatusValue)) {
+      throw new Error(`Invalid application status: ${value}`);
+    }
+    return new ApplicationStatus(value as ApplicationStatusValue);
+  }
+
+  toString(): string { return this.value; }
+  equals(other: ApplicationStatus): boolean { return this.value === other.value; }
+
+  canTransitionTo(newStatus: ApplicationStatus): boolean {
+    const transitions: Record<ApplicationStatusValue, ApplicationStatusValue[]> = {
+      'draft': ['in_progress'],
+      'in_progress': ['submitted', 'draft'],
+      'submitted': ['under_review'],
+      'under_review': ['approved', 'rejected', 'in_progress'],
+      'approved': [],
+      'rejected': ['in_progress'],
+    };
+    return transitions[this.value]?.includes(newStatus.value) ?? false;
+  }
+
+  validateTransitionTo(newStatus: ApplicationStatus): void {
+    if (!this.canTransitionTo(newStatus)) {
+      throw new Error(`Cannot transition from '${this.value}' to '${newStatus.value}'`);
+    }
+  }
+}
+```
+
+#### 4.2 Create Domain Entity
+
+```typescript
+// libs/domain/src/entities/application.entity.ts
+import { ApplicationType } from '../value-objects/application/application-type.vo';
+import { ApplicationStatus } from '../value-objects/application/application-status.vo';
+
+export class Application {
+  constructor(
+    private readonly id: string,
+    private readonly orgId: string,
+    private type: ApplicationType,
+    private status: ApplicationStatus,
+    private title: string,
+    private description: string | null,
+    private readonly createdAt: Date,
+    private updatedAt: Date,
+  ) {}
+
+  getId(): string { return this.id; }
+  getOrgId(): string { return this.orgId; }
+  getType(): ApplicationType { return this.type; }
+  getStatus(): ApplicationStatus { return this.status; }
+  getTitle(): string { return this.title; }
+  getDescription(): string | null { return this.description; }
+  getCreatedAt(): Date { return this.createdAt; }
+  getUpdatedAt(): Date { return this.updatedAt; }
+
+  transitionTo(newStatus: ApplicationStatus): void {
+    this.status.validateTransitionTo(newStatus);
+    this.status = newStatus;
+    this.updatedAt = new Date();
+  }
+}
+```
+
+#### 4.3 Create Repository Interface
+
+```typescript
+// libs/domain/src/repositories/application.repository.interface.ts
+import { Application } from '../entities/application.entity';
+
+export interface IApplicationRepository {
+  save(application: Application): Promise<void>;
+  findById(id: string): Promise<Application | null>;
+  findByOrgId(orgId: string): Promise<Application[]>;
+  findByStatus(orgId: string, status: string): Promise<Application[]>;
+}
+
+// CRITICAL: Symbol token for Dependency Injection
+export const IApplicationRepository = Symbol('IApplicationRepository');
+```
+
+#### 4.4 Export from Domain Index
+
+```typescript
+// libs/domain/src/index.ts
+// Entities
+export * from './entities/application.entity';
+
+// Value Objects
+export * from './value-objects/application/application-type.vo';
+export * from './value-objects/application/application-status.vo';
+
+// Repository Interfaces
+export * from './repositories/application.repository.interface';
+```
+
+### Step 5: Implement Infrastructure Layer
+
+#### 5.1 Create ORM Entity
+
+```typescript
+// apps/ip-hub-backend/src/app/dashboard/infrastructure/application.orm-entity.ts
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import {
+  ApplicationType,
+  ApplicationTypeValue,
+  ApplicationStatus,
+  ApplicationStatusValue,
+} from '@ip-hub-backend/domain';
+
+@Entity('applications')
+export class ApplicationEntity {
+  @PrimaryColumn('uuid')
+  id!: string;
+
+  @Column('uuid')
+  @Index()
+  orgId!: string;
+
+  @Column({ type: 'varchar', length: 50 })
+  private _type!: ApplicationTypeValue;
+
+  get type(): ApplicationType {
+    return ApplicationType.fromString(this._type);
+  }
+
+  set type(value: ApplicationType) {
+    this._type = value.toString() as ApplicationTypeValue;
+  }
+
+  @Column({ type: 'varchar', length: 50, default: 'draft' })
+  private _status!: ApplicationStatusValue;
+
+  get status(): ApplicationStatus {
+    return ApplicationStatus.fromString(this._status);
+  }
+
+  set status(value: ApplicationStatus) {
+    this._status = value.toString() as ApplicationStatusValue;
+  }
+
+  @Column({ type: 'varchar', length: 500 })
+  title!: string;
+
+  @Column({ type: 'text', nullable: true })
+  description!: string | null;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
+}
+```
+
+#### 5.2 Create Mapper
+
+```typescript
+// apps/ip-hub-backend/src/app/dashboard/infrastructure/application.mapper.ts
+import { Application } from '@ip-hub-backend/domain';
+import { ApplicationEntity } from './application.orm-entity';
+
+export class ApplicationMapper {
+  static toDomain(entity: ApplicationEntity): Application {
+    return new Application(
+      entity.id,
+      entity.orgId,
+      entity.type,
+      entity.status,
+      entity.title,
+      entity.description,
+      entity.createdAt,
+      entity.updatedAt,
+    );
+  }
+
+  static toPersistence(domain: Application): ApplicationEntity {
+    const entity = new ApplicationEntity();
+    entity.id = domain.getId();
+    entity.orgId = domain.getOrgId();
+    entity.type = domain.getType();
+    entity.status = domain.getStatus();
+    entity.title = domain.getTitle();
+    entity.description = domain.getDescription();
+    return entity;
+  }
+}
+```
+
+#### 5.3 Create Repository Implementation
+
+```typescript
+// apps/ip-hub-backend/src/app/dashboard/infrastructure/application.repository.ts
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { IApplicationRepository, Application } from '@ip-hub-backend/domain';
+import { ApplicationEntity } from './application.orm-entity';
+import { ApplicationMapper } from './application.mapper';
+
+@Injectable()
+export class ApplicationRepository implements IApplicationRepository {
+  constructor(
+    @InjectRepository(ApplicationEntity)
+    private readonly repository: Repository<ApplicationEntity>,
+  ) {}
+
+  async save(application: Application): Promise<void> {
+    const entity = ApplicationMapper.toPersistence(application);
+    await this.repository.save(entity);
+  }
+
+  async findById(id: string): Promise<Application | null> {
+    const entity = await this.repository.findOne({ where: { id } });
+    return entity ? ApplicationMapper.toDomain(entity) : null;
+  }
+
+  async findByOrgId(orgId: string): Promise<Application[]> {
+    const entities = await this.repository.find({ where: { orgId } });
+    return entities.map(ApplicationMapper.toDomain);
+  }
+
+  async findByStatus(orgId: string, status: string): Promise<Application[]> {
+    const entities = await this.repository.find({
+      where: { orgId, _status: status },
+    });
+    return entities.map(ApplicationMapper.toDomain);
+  }
+}
+```
+
+### Step 6: Implement Query Handler with Interface Injection
+
+The handler must match the unit test expectations and use the repository interface:
 
 ```typescript
 // apps/ip-hub-backend/src/app/dashboard/queries/get-dashboard-summary.handler.ts
 import { QueryHandler, IQueryHandler } from '@nestjs/cqrs';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Inject } from '@nestjs/common';
 import { GetDashboardSummaryQuery } from './get-dashboard-summary.query';
 import { DashboardSummaryDto } from '@ip-hub-backend/api-contracts';
-import { ApplicationEntity } from '../../../../test/shared/entities/application.entity';
+import {
+  IApplicationRepository,
+  Application,
+  ApplicationType,
+  ApplicationStatus,
+} from '@ip-hub-backend/domain';
 
 @QueryHandler(GetDashboardSummaryQuery)
 export class GetDashboardSummaryHandler
   implements IQueryHandler<GetDashboardSummaryQuery>
 {
   constructor(
-    @InjectRepository(ApplicationEntity)
-    private readonly repository: Repository<ApplicationEntity>,
+    // CRITICAL: Use @Inject with Symbol token, NOT @InjectRepository
+    @Inject(IApplicationRepository)
+    private readonly repository: IApplicationRepository,
   ) {}
 
   async execute(query: GetDashboardSummaryQuery): Promise<DashboardSummaryDto> {
-    // Fetch applications for the organization
-    const applications = await this.repository.find({
-      where: { orgId: query.orgId },
-    });
+    // Fetch domain entities via repository interface
+    const applications = await this.repository.findByOrgId(query.orgId);
 
-    // Calculate counts
+    // Calculate counts using domain entity methods
     const totalAssets = applications.length;
 
     const inProgressCount = applications.filter(
-      (app) => app.status === 'in_progress',
+      (app) => app.getStatus().equals(ApplicationStatus.IN_PROGRESS),
     ).length;
 
     const pendingReviewCount = applications.filter(
-      (app) => app.status === 'under_review',
+      (app) => app.getStatus().equals(ApplicationStatus.UNDER_REVIEW),
     ).length;
 
-    // Count by type
-    const patents = applications.filter((app) => app.type === 'patent').length;
+    // Count by type using domain value objects
+    const patents = applications.filter(
+      (app) => app.getType().equals(ApplicationType.PATENT),
+    ).length;
     const trademarks = applications.filter(
-      (app) => app.type === 'trademark',
+      (app) => app.getType().equals(ApplicationType.TRADEMARK),
     ).length;
     const copyrights = applications.filter(
-      (app) => app.type === 'copyright',
+      (app) => app.getType().equals(ApplicationType.COPYRIGHT),
     ).length;
 
     return {
@@ -236,25 +549,36 @@ Tests:       6 passed, 6 total
 
 **Unit Tests: GREEN**
 
-### Step 5: Create Dashboard Module
+### Step 7: Create Dashboard Module with Symbol DI
 
 ```typescript
 // apps/ip-hub-backend/src/app/dashboard/dashboard.module.ts
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { IApplicationRepository } from '@ip-hub-backend/domain';
+import { ApplicationEntity } from './infrastructure/application.orm-entity';
+import { ApplicationRepository } from './infrastructure/application.repository';
 import { GetDashboardSummaryHandler } from './queries/get-dashboard-summary.handler';
-import { ApplicationEntity } from '../../../test/shared/entities/application.entity';
+import { DashboardController } from '../../bffe/dashboard/dashboard.controller';
 
 @Module({
   imports: [CqrsModule, TypeOrmModule.forFeature([ApplicationEntity])],
-  providers: [GetDashboardSummaryHandler],
+  controllers: [DashboardController],
+  providers: [
+    GetDashboardSummaryHandler,
+    // CRITICAL: Symbol-based DI provider
+    {
+      provide: IApplicationRepository,
+      useClass: ApplicationRepository,
+    },
+  ],
   exports: [CqrsModule],
 })
 export class DashboardModule {}
 ```
 
-### Step 6: Create Controller Endpoint
+### Step 8: Create Controller Endpoint
 
 The integration tests expect a BFFE controller at `/api/dashboard/summary`:
 
@@ -311,27 +635,7 @@ export class DashboardController {
 }
 ```
 
-### Step 7: Update Module to Include Controller
-
-```typescript
-// apps/ip-hub-backend/src/app/dashboard/dashboard.module.ts
-import { Module } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { GetDashboardSummaryHandler } from './queries/get-dashboard-summary.handler';
-import { DashboardController } from '../../bffe/dashboard/dashboard.controller';
-import { ApplicationEntity } from '../../../test/shared/entities/application.entity';
-
-@Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([ApplicationEntity])],
-  controllers: [DashboardController],
-  providers: [GetDashboardSummaryHandler],
-  exports: [CqrsModule],
-})
-export class DashboardModule {}
-```
-
-### Step 8: Register Module in AppModule
+### Step 9: Register Module in AppModule
 
 ```typescript
 // apps/ip-hub-backend/src/app/app.module.ts
@@ -369,7 +673,7 @@ import { ApplicationModule } from './application/application.module';
 export class AppModule {}
 ```
 
-### Step 9: Update Test App Factory
+### Step 10: Update Test App Factory
 
 Add DashboardModule to the test app factory:
 
@@ -427,10 +731,11 @@ export async function createTestApp(
 }
 ```
 
-### Step 10: Run Integration Tests
+### Step 11: Run Integration Tests
 
 ```bash
-npx nx test ip-hub-backend --testPathPattern="integration/dashboard"
+# Run integration tests - uses test:integration target
+npx nx test:integration ip-hub-backend --testPathPattern="dashboard"
 ```
 
 **Expected Output:**
@@ -450,10 +755,14 @@ Tests:       5 passed, 5 total
 
 **Integration Tests: GREEN**
 
-### Step 11: Run BDD E2E Tests
+### Step 12: Run BDD E2E Tests
 
 ```bash
-npx nx e2e ip-hub-backend-e2e --grep "Dashboard summary returns correct portfolio counts"
+# Run E2E tests - uses test:e2e target with -- separator for Cucumber args
+npx nx test:e2e ip-hub-backend -- --name "Dashboard summary returns correct portfolio counts"
+
+# Alternative: Run by tags
+npx nx test:e2e ip-hub-backend -- --tags "@02-dashboard-overview and @api and @query and @smoke"
 ```
 
 **Expected Output:**
@@ -474,7 +783,7 @@ Feature: Dashboard Overview - Phase 1 BFFE API
 
 **BDD E2E Tests: GREEN**
 
-### Step 12: Final Verification
+### Step 13: Final Verification
 
 ```bash
 # All project tests
@@ -496,32 +805,61 @@ npx tsc --noEmit
 ```json
 {
   "implementedFiles": {
-    "queries": [
+    "domainLayer": [
+      {
+        "path": "libs/domain/src/value-objects/application/application-type.vo.ts",
+        "type": "value-object"
+      },
+      {
+        "path": "libs/domain/src/value-objects/application/application-status.vo.ts",
+        "type": "value-object"
+      },
+      {
+        "path": "libs/domain/src/entities/application.entity.ts",
+        "type": "domain-entity"
+      },
+      {
+        "path": "libs/domain/src/repositories/application.repository.interface.ts",
+        "type": "repository-interface"
+      }
+    ],
+    "infrastructureLayer": [
+      {
+        "path": "apps/ip-hub-backend/src/app/dashboard/infrastructure/application.orm-entity.ts",
+        "type": "orm-entity"
+      },
+      {
+        "path": "apps/ip-hub-backend/src/app/dashboard/infrastructure/application.mapper.ts",
+        "type": "mapper"
+      },
+      {
+        "path": "apps/ip-hub-backend/src/app/dashboard/infrastructure/application.repository.ts",
+        "type": "repository-implementation"
+      }
+    ],
+    "applicationLayer": [
       {
         "path": "apps/ip-hub-backend/src/app/dashboard/queries/get-dashboard-summary.query.ts",
         "type": "query-class"
       },
       {
         "path": "apps/ip-hub-backend/src/app/dashboard/queries/get-dashboard-summary.handler.ts",
-        "type": "query-handler"
+        "type": "query-handler",
+        "note": "Uses @Inject(IApplicationRepository) with Symbol DI"
       }
     ],
-    "commands": [],
-    "domain": [],
-    "infrastructure": [],
-    "modules": [
+    "apiLayer": [
       {
         "path": "apps/ip-hub-backend/src/app/dashboard/dashboard.module.ts",
-        "type": "feature-module"
-      }
-    ],
-    "controllers": [
+        "type": "feature-module",
+        "note": "Uses Symbol DI provider for IApplicationRepository"
+      },
       {
         "path": "apps/ip-hub-backend/src/bffe/dashboard/dashboard.controller.ts",
         "type": "bffe-controller"
       }
     ],
-    "dtos": [
+    "contracts": [
       {
         "path": "libs/api-contracts/src/dashboard/dashboard-summary.dto.ts",
         "type": "api-dto"
@@ -529,6 +867,10 @@ npx tsc --noEmit
     ]
   },
   "modifiedFiles": [
+    {
+      "path": "libs/domain/src/index.ts",
+      "change": "Exported Application entity, value objects, and repository interface"
+    },
     {
       "path": "apps/ip-hub-backend/src/app/app.module.ts",
       "change": "Added DashboardModule to imports"
@@ -542,11 +884,26 @@ npx tsc --noEmit
       "change": "Exported DashboardSummaryDto"
     }
   ],
+  "dddArchitecture": {
+    "domainLayerComplete": true,
+    "infrastructureLayerComplete": true,
+    "applicationLayerComplete": true,
+    "symbolDIUsed": true,
+    "noTestEntitiesInProduction": true,
+    "noDirectRepositoryInjection": true
+  },
   "testResults": {
     "unitTests": {
       "status": "passed",
-      "count": "6 passing",
-      "duration": "45ms"
+      "count": "14 passing",
+      "breakdown": {
+        "valueObjects": 8,
+        "domainEntity": 3,
+        "mapper": 3,
+        "handler": 6,
+        "query": 2
+      },
+      "duration": "85ms"
     },
     "integrationTests": {
       "status": "passed",
@@ -559,7 +916,7 @@ npx tsc --noEmit
     }
   },
   "status": "green_implementation_complete",
-  "summary": "Implemented 5 new files and modified 3 files to make all tests pass for Dashboard Summary scenario. All unit (6), integration (5), and E2E (1 scenario, 5 steps) tests are now green.",
+  "summary": "Implemented full DDD architecture with 11 new files across 4 layers. Domain layer: 4 files (2 value objects, 1 entity, 1 interface). Infrastructure: 3 files (ORM entity, mapper, repository). Application: 2 files (query, handler with Symbol DI). API: 2 files (module, controller). All tests green.",
   "nextStep": "Proceed to next scenario: Dashboard alerts summary"
 }
 ```
@@ -569,24 +926,40 @@ npx tsc --noEmit
 ## Verification Commands
 
 ```bash
-# 1. TypeScript compilation check
-npx tsc --noEmit
+# 1. TypeScript compilation check (with project reference)
+npx tsc --noEmit -p apps/ip-hub-backend/tsconfig.app.json
 
 # 2. Run unit tests for implemented handlers
 npx nx test ip-hub-backend --testPathPattern="dashboard.*handler.spec"
 
-# 3. Run integration tests
-npx nx test ip-hub-backend --testPathPattern="integration/dashboard"
+# 3. Run integration tests - uses test:integration target
+npx nx test:integration ip-hub-backend --testPathPattern="dashboard"
 
-# 4. Run all tests to ensure no regressions
+# 4. Run all unit tests to ensure no regressions
 npx nx test ip-hub-backend
 
-# 5. Run BDD E2E tests
-npx nx e2e ip-hub-backend-e2e --grep "Dashboard summary returns correct portfolio counts"
+# 5. Run all integration tests
+npx nx test:integration ip-hub-backend
 
-# 6. Lint check
+# 6. Run BDD E2E tests - uses test:e2e target with -- separator
+npx nx test:e2e ip-hub-backend -- --name "Dashboard summary returns correct portfolio counts"
+
+# 7. Run E2E tests by tags
+npx nx test:e2e ip-hub-backend -- --tags "@02-dashboard-overview and @api"
+
+# 8. Lint check
 npx nx lint ip-hub-backend
 ```
+
+### Important Test Command Notes
+
+1. **Unit Tests**: `npx nx test ip-hub-backend` - standard Jest test runner
+2. **Integration Tests**: `npx nx test:integration ip-hub-backend` - separate target for DB tests with Testcontainers
+3. **E2E Tests**: `npx nx test:e2e ip-hub-backend` - runs Cucumber.js
+   - Use `--` to separate nx args from Cucumber args
+   - `--name "scenario name"` for specific scenarios
+   - `--tags "@tag1 and @tag2"` for tag-based filtering
+4. **TypeScript**: Always use `-p` flag with project tsconfig path
 
 ---
 
@@ -626,15 +999,37 @@ BDD Red (404 on /api/dashboard/summary)
 
 ---
 
-## Implementation Summary
+## Implementation Summary (Full DDD Architecture)
 
-### Files Created
+### Domain Layer Files Created (`libs/domain/src/`)
 
 | File | Type | Purpose |
 |------|------|---------|
-| `src/app/dashboard/queries/get-dashboard-summary.query.ts` | Query Class | Encapsulates query parameters |
-| `src/app/dashboard/queries/get-dashboard-summary.handler.ts` | Query Handler | Implements dashboard summary logic |
-| `src/app/dashboard/dashboard.module.ts` | Feature Module | Registers handlers and controllers |
+| `value-objects/application/application-type.vo.ts` | Value Object | Encapsulates application type with validation |
+| `value-objects/application/application-status.vo.ts` | Value Object | Encapsulates status with state machine transitions |
+| `entities/application.entity.ts` | Domain Entity | Pure business logic, no framework dependencies |
+| `repositories/application.repository.interface.ts` | Interface + Symbol | Defines contract with DI token |
+
+### Infrastructure Layer Files Created (`app/dashboard/infrastructure/`)
+
+| File | Type | Purpose |
+|------|------|---------|
+| `application.orm-entity.ts` | ORM Entity | TypeORM decorators, value object getters/setters |
+| `application.mapper.ts` | Mapper | Bidirectional Domain ↔ ORM conversion |
+| `application.repository.ts` | Repository | Implements interface, uses mapper |
+
+### Application Layer Files Created (`app/dashboard/`)
+
+| File | Type | Purpose |
+|------|------|---------|
+| `queries/get-dashboard-summary.query.ts` | Query Class | Encapsulates query parameters |
+| `queries/get-dashboard-summary.handler.ts` | Query Handler | Uses `@Inject(IApplicationRepository)` Symbol DI |
+
+### API Layer Files Created
+
+| File | Type | Purpose |
+|------|------|---------|
+| `dashboard.module.ts` | Feature Module | Symbol DI provider for IApplicationRepository |
 | `src/bffe/dashboard/dashboard.controller.ts` | Controller | Exposes GET /api/dashboard/summary |
 | `libs/api-contracts/src/dashboard/dashboard-summary.dto.ts` | DTO | API response contract |
 
@@ -642,6 +1037,20 @@ BDD Red (404 on /api/dashboard/summary)
 
 | File | Change |
 |------|--------|
+| `libs/domain/src/index.ts` | Exported Application, value objects, repository interface |
 | `src/app/app.module.ts` | Added DashboardModule to imports |
 | `test/shared/test-app-factory.ts` | Added DashboardModule to test imports |
 | `libs/api-contracts/src/index.ts` | Exported DashboardSummaryDto |
+
+### DDD Architecture Compliance
+
+| Requirement | Status |
+|-------------|--------|
+| Domain entity in `libs/domain/src/entities/` | ✓ |
+| Value objects for status/type | ✓ |
+| Repository interface with Symbol token | ✓ |
+| ORM entity in `app/{domain}/infrastructure/` | ✓ |
+| Mapper for Domain ↔ ORM | ✓ |
+| Handler uses `@Inject(IRepository)` | ✓ |
+| NO `test/shared/entities/` in production | ✓ |
+| NO `@InjectRepository` in handlers | ✓ |

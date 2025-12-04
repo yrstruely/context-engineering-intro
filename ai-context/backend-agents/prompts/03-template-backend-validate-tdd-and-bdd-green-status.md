@@ -15,11 +15,22 @@ Your task is to **validate** that all TDD unit tests, integration tests, and BDD
 ### Safety Constraints
 
 - **NEVER** modify any production code - this is a validation-only step
-- **NEVER** modify any test code - tests were created in Step 01
+- **NEVER** modify unit test or integration test code - tests were created in Step 01
+- **MAY** fix E2E step definitions if they have infrastructure issues (wrong UUIDs, missing tags, etc.)
+- **MAY** add missing tags (like `@database`) to feature files to enable test infrastructure
 - **ALWAYS** run all relevant test suites before declaring validation complete
 - **ALWAYS** check for regressions in existing features
 - **ALWAYS** report any failures with clear diagnostic information
+- **ALWAYS** document any test infrastructure fixes in the validation report
 - **NEVER** assume tests pass without running them
+
+### BDD-First Priority (Outside-In Development)
+
+**CRITICAL**: When validating test results:
+- **BDD wins** - The acceptance criteria from feature files take precedence over DDD patterns
+- If BDD tests pass but DDD patterns seem violated, BDD results are authoritative
+- Implementation should serve the BDD requirements first
+- Validation should confirm BDD scenarios pass before checking DDD compliance
 
 ---
 
@@ -74,8 +85,8 @@ This confirms the TDD Green phase and achieves validated BDD Green status.
 Before running tests, verify the project is in a testable state:
 
 ```bash
-# Check TypeScript compilation
-npx tsc --noEmit
+# Check TypeScript compilation (must specify project config)
+npx tsc --noEmit -p apps/ip-hub-backend/tsconfig.app.json
 
 # Check for uncommitted changes (optional)
 git status
@@ -91,6 +102,84 @@ git status
 **Working Directory Clean**: YES / NO
 
 **Ready for Test Validation**: YES / NO
+```
+
+### Step 1.5: Validate DDD Architecture
+
+**CRITICAL**: Before running tests, verify the implementation follows DDD patterns. This catches architectural violations early.
+
+**Domain Layer Checklist**:
+```bash
+# Check domain entities exist
+ls libs/domain/src/entities/<<ENTITY>>.entity.ts
+
+# Check value objects exist
+ls libs/domain/src/value-objects/<<DOMAIN>>/<<ENTITY>>-type.vo.ts
+ls libs/domain/src/value-objects/<<DOMAIN>>/<<ENTITY>>-status.vo.ts
+
+# Check repository interface exists
+ls libs/domain/src/repositories/<<ENTITY>>.repository.interface.ts
+
+# Check exports in index.ts
+grep "<<ENTITY>>" libs/domain/src/index.ts
+```
+
+**Infrastructure Layer Checklist**:
+```bash
+# Check ORM entity exists (NOT in test/shared/entities)
+ls apps/ip-hub-backend/src/app/<<DOMAIN>>/infrastructure/<<ENTITY>>.orm-entity.ts
+
+# Check mapper exists
+ls apps/ip-hub-backend/src/app/<<DOMAIN>>/infrastructure/<<ENTITY>>.mapper.ts
+
+# Check repository implementation exists
+ls apps/ip-hub-backend/src/app/<<DOMAIN>>/infrastructure/<<ENTITY>>.repository.ts
+```
+
+**Application Layer Checklist**:
+```bash
+# Check handler uses interface injection (should find @Inject(I<<ENTITY>>Repository))
+grep -n "@Inject(I" apps/ip-hub-backend/src/app/<<DOMAIN>>/queries/<<QUERY>>.handler.ts
+
+# Check NO direct TypeORM injection (should return empty)
+grep -n "@InjectRepository" apps/ip-hub-backend/src/app/<<DOMAIN>>/queries/<<QUERY>>.handler.ts
+
+# Check NO test entity imports (should return empty)
+grep -n "test/shared/entities" apps/ip-hub-backend/src/app/<<DOMAIN>>/queries/<<QUERY>>.handler.ts
+```
+
+**DDD Architecture Validation Failures**:
+
+| Issue | Symptom | Fix |
+|-------|---------|-----|
+| Using test entity | Handler imports from `test/shared/entities/` | Create proper ORM entity in `infrastructure/` |
+| Missing domain entity | No file in `libs/domain/src/entities/` | Create domain entity class |
+| Direct repository injection | Uses `@InjectRepository(Entity)` | Use `@Inject(IEntityRepository)` |
+| Missing value objects | Status/type are plain strings | Create value objects with validation |
+| Missing mapper | No `*.mapper.ts` file | Create mapper for Domain↔ORM conversion |
+| Missing repository interface | No Symbol token for DI | Create interface with Symbol in libs/domain |
+
+**Document DDD Architecture Validation:**
+
+```markdown
+**DDD Architecture Validation for: <<SCENARIO_NAME>>**
+
+**Domain Layer:**
+- [ ] Domain entity: `libs/domain/src/entities/<<ENTITY>>.entity.ts`
+- [ ] Value objects: `libs/domain/src/value-objects/<<DOMAIN>>/`
+- [ ] Repository interface: `libs/domain/src/repositories/<<ENTITY>>.repository.interface.ts`
+- [ ] Exports in index.ts
+
+**Infrastructure Layer:**
+- [ ] ORM entity: `app/<<DOMAIN>>/infrastructure/<<ENTITY>>.orm-entity.ts`
+- [ ] Mapper: `app/<<DOMAIN>>/infrastructure/<<ENTITY>>.mapper.ts`
+- [ ] Repository: `app/<<DOMAIN>>/infrastructure/<<ENTITY>>.repository.ts`
+
+**Application Layer:**
+- [ ] Handler uses `@Inject(IRepository)` (NOT `@InjectRepository`)
+- [ ] No imports from `test/shared/entities/`
+
+**DDD Architecture Status**: PASS / FAIL
 ```
 
 ### Step 2: Run Unit Tests
@@ -132,12 +221,17 @@ npx nx test ip-hub-backend --testPathPattern="<<DOMAIN>>" --verbose
 Execute integration tests with real database:
 
 ```bash
-# Run feature-specific integration tests
-npx nx test ip-hub-backend --testPathPattern="integration/<<FEATURE>>"
+# Run feature-specific integration tests (use test:integration target)
+npx nx test:integration ip-hub-backend --testPathPattern="<<FEATURE>>"
 
 # With verbose output
-npx nx test ip-hub-backend --testPathPattern="integration/<<FEATURE>>" --verbose
+npx nx test:integration ip-hub-backend --testPathPattern="<<FEATURE>>" --verbose
+
+# Run all integration tests
+npx nx test:integration ip-hub-backend
 ```
+
+**Note:** Integration tests use a separate Nx target `test:integration` which is configured to run tests from the `test/integration/` directory with Testcontainers.
 
 **Document Integration Test Results:**
 
@@ -167,15 +261,21 @@ npx nx test ip-hub-backend --testPathPattern="integration/<<FEATURE>>" --verbose
 Execute the BDD scenario to validate end-to-end functionality:
 
 ```bash
-# Run specific scenario
-npx nx e2e ip-hub-backend-e2e --grep "<<SCENARIO_NAME>>"
+# Run specific scenario by name (use test:e2e target with -- separator)
+npx nx test:e2e ip-hub-backend -- --name "<<SCENARIO_NAME>>"
 
-# Run all scenarios in feature file
-npx nx e2e ip-hub-backend-e2e --grep "<<FEATURE_NAME>>"
+# Run all scenarios with a specific tag
+npx nx test:e2e ip-hub-backend -- --tags "@<<TAG_NAME>>"
 
-# With verbose cucumber output
-npx nx e2e ip-hub-backend-e2e --grep "<<SCENARIO_NAME>>" -- --format progress
+# Run all E2E tests
+npx nx test:e2e ip-hub-backend
 ```
+
+**Important Notes:**
+- The E2E target is `test:e2e`, not `e2e`
+- Arguments to Cucumber must be passed after `--` separator
+- Use `--name` for scenario names, `--tags` for tag filtering
+- Feature files requiring database access MUST have `@database` tag
 
 **Document BDD E2E Results:**
 
@@ -213,10 +313,10 @@ Ensure existing features remain green:
 npx nx test ip-hub-backend
 
 # Run all backend integration tests
-npx nx test ip-hub-backend --testPathPattern="integration"
+npx nx test:integration ip-hub-backend
 
 # Run all E2E tests for existing features
-npx nx e2e ip-hub-backend-e2e
+npx nx test:e2e ip-hub-backend
 ```
 
 **Document Regression Test Results:**
@@ -241,11 +341,14 @@ npx nx e2e ip-hub-backend-e2e
 ### Step 6: Final Code Quality Checks
 
 ```bash
-# TypeScript compilation
-npx tsc --noEmit
+# TypeScript compilation (must specify project config)
+npx tsc --noEmit -p apps/ip-hub-backend/tsconfig.app.json
 
 # ESLint
 npx nx lint ip-hub-backend
+
+# Build
+npx nx build ip-hub-backend
 
 # Optional: Run full CI check
 npx nx run-many -t test,lint,build --all
@@ -427,8 +530,8 @@ npx nx run-many -t test,lint,build --all
 ## Verification Commands
 
 ```bash
-# 1. TypeScript compilation check
-npx tsc --noEmit
+# 1. TypeScript compilation check (must specify project config)
+npx tsc --noEmit -p apps/ip-hub-backend/tsconfig.app.json
 
 # 2. Run unit tests for specific handler
 npx nx test ip-hub-backend --testPathPattern="<<HANDLER>>.spec"
@@ -436,22 +539,28 @@ npx nx test ip-hub-backend --testPathPattern="<<HANDLER>>.spec"
 # 3. Run all domain unit tests
 npx nx test ip-hub-backend --testPathPattern="<<DOMAIN>>"
 
-# 4. Run integration tests for feature
-npx nx test ip-hub-backend --testPathPattern="integration/<<FEATURE>>"
+# 4. Run integration tests for feature (use test:integration target)
+npx nx test:integration ip-hub-backend --testPathPattern="<<FEATURE>>"
 
-# 5. Run BDD E2E tests for scenario
-npx nx e2e ip-hub-backend-e2e --grep "<<SCENARIO_NAME>>"
+# 5. Run BDD E2E tests for scenario (use test:e2e target with -- separator)
+npx nx test:e2e ip-hub-backend -- --name "<<SCENARIO_NAME>>"
 
-# 6. Run all tests (regression check)
+# 6. Run all unit tests (regression check)
 npx nx test ip-hub-backend
 
-# 7. Run all E2E tests
-npx nx e2e ip-hub-backend-e2e
+# 7. Run all integration tests
+npx nx test:integration ip-hub-backend
 
-# 8. Lint check
+# 8. Run all E2E tests
+npx nx test:e2e ip-hub-backend
+
+# 9. Lint check
 npx nx lint ip-hub-backend
 
-# 9. Full CI simulation
+# 10. Build check
+npx nx build ip-hub-backend
+
+# 11. Full CI simulation
 npx nx run-many -t test,lint,build --all
 ```
 
@@ -461,10 +570,42 @@ npx nx run-many -t test,lint,build --all
 
 Before declaring validation complete:
 
+### DDD Architecture Validation (CRITICAL)
+
+**Domain Layer**:
+- [ ] Domain entity exists in `libs/domain/src/entities/`
+- [ ] Domain entity has NO framework dependencies (no decorators, no @nestjs imports)
+- [ ] Domain entity uses value objects for status/type fields
+- [ ] Value objects exist in `libs/domain/src/value-objects/{domain}/`
+- [ ] Value objects have validation in constructor
+- [ ] Repository interface exists with Symbol token in `libs/domain/src/repositories/`
+- [ ] All domain types exported from `libs/domain/src/index.ts`
+
+**Infrastructure Layer**:
+- [ ] ORM entity in `app/{domain}/infrastructure/` (NOT in `test/shared/entities`)
+- [ ] ORM entity uses value object getters/setters for type/status
+- [ ] Mapper converts between ORM and Domain entities
+- [ ] Repository implements interface from libs/domain
+- [ ] ORM entity added to `test-database.ts` ALL_ENTITIES array
+
+**Application Layer**:
+- [ ] Handler uses `@Inject(IEntityRepository)` NOT `@InjectRepository`
+- [ ] Handler works with domain entities (not ORM entities)
+- [ ] DTO mapper converts domain to API contract
+- [ ] Module uses Symbol DI provider pattern
+
+**Common Anti-Patterns to REJECT**:
+- [ ] NO imports from `test/shared/entities/` in production code
+- [ ] NO direct TypeORM repository injection in handlers
+- [ ] NO string literals for status/type (must use value objects)
+- [ ] NO ORM entities passed to/from handlers (must use domain entities)
+
 ### Unit Tests
 - [ ] All handler tests pass
 - [ ] All query/command class tests pass
-- [ ] All mapper tests pass (if applicable)
+- [ ] All mapper tests pass (Domain↔ORM and Domain→DTO)
+- [ ] All value object tests pass
+- [ ] All domain entity tests pass
 - [ ] Mock assertions are verified
 - [ ] EventBus events are properly captured and verified
 
@@ -516,3 +657,102 @@ After validation:
 - No regressions in existing features
 - Code quality checks pass
 - Feature is ready for deployment or next scenario
+
+---
+
+## Common Validation Issues and Fixes
+
+### Issue 1: E2E Tests Return Zero/Empty Results
+
+**Symptom:** E2E tests pass but return `totalAssets: 0` or empty arrays when data is expected.
+
+**Cause:** Feature file missing `@database` tag - factories aren't initialized.
+
+**Fix:** Add `@database` tag to feature file:
+```gherkin
+@<<FEATURE_TAG>> @backend @api @database
+Feature: <<Feature Name>>
+```
+
+### Issue 2: E2E Tests Return Wrong Count
+
+**Symptom:** E2E tests return more/fewer items than expected (e.g., expected 11, got 13).
+
+**Cause:** Standard test data seeding creates additional records beyond test-specific data.
+
+**Fix:** Clear existing records before creating test-specific data in step definitions:
+```typescript
+// First, clear existing records for the test organization
+const dataSource = this.getContext<import('typeorm').DataSource>('dataSource');
+if (dataSource) {
+  await dataSource.getRepository('<<EntityName>>').delete({ orgId: <<ORG_ID>> });
+  this.logDebug('🧹 Cleared existing records for test org');
+}
+```
+
+### Issue 3: Step Definitions Using Wrong Entity Type
+
+**Symptom:** Step creates data but query handler returns zero results.
+
+**Cause:** Step definition creates wrong entity type (e.g., `IPAssetEntity` when handler queries `ApplicationEntity`).
+
+**Fix:** Match step definition entity to what the handler queries:
+```typescript
+// Check what entity the handler queries, then use matching factory
+const <<entityFactory>> = factories.<<entity>> as <<EntityFactory>>;
+await <<entityFactory>>.createMany(count, overrides);
+```
+
+### Issue 4: UUID Mismatch Errors
+
+**Symptom:** Error like `invalid input syntax for type uuid: "org-dff-001"`.
+
+**Cause:** Step definitions using symbolic names but database expects UUID format.
+
+**Fix:** Use constant UUIDs in step definitions:
+```typescript
+// Standard test UUIDs for consistent test data
+const ALICE_ORG_ID = '550e8400-e29b-41d4-a716-446655440001';
+const ALICE_USER_ID = '550e8400-e29b-41d4-a716-446655440002';
+```
+
+### Issue 5: TypeScript Compilation Fails Without Project Config
+
+**Symptom:** `npx tsc --noEmit` fails with many unrelated errors.
+
+**Cause:** Running `tsc` without specifying project configuration picks up wrong tsconfig.
+
+**Fix:** Always specify project config:
+```bash
+npx tsc --noEmit -p apps/ip-hub-backend/tsconfig.app.json
+```
+
+### Issue 6: Integration/E2E Test Targets Not Found
+
+**Symptom:** Command `npx nx e2e ip-hub-backend-e2e` fails with "target not found".
+
+**Cause:** Using wrong Nx target names.
+
+**Fix:** Use correct target names:
+```bash
+# Integration tests
+npx nx test:integration ip-hub-backend
+
+# E2E tests
+npx nx test:e2e ip-hub-backend -- --name "<<scenario>>"
+```
+
+### Issue 7: E2E Test Arguments Not Passed Correctly
+
+**Symptom:** E2E tests run all scenarios instead of filtered set.
+
+**Cause:** Missing `--` separator before Cucumber arguments.
+
+**Fix:** Always use `--` separator:
+```bash
+# Correct
+npx nx test:e2e ip-hub-backend -- --name "<<scenario>>"
+
+# Incorrect (arguments ignored)
+npx nx test:e2e ip-hub-backend --name "<<scenario>>"
+```

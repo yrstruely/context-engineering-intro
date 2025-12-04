@@ -21,6 +21,24 @@ Your task is to implement the backend code that makes failing TDD unit and integ
 - **ALWAYS** maintain strict TypeScript compliance
 - **ALWAYS** use existing test infrastructure (TestDatabase, EventBusSpy, factories)
 
+### BDD-First Priority (Outside-In Development)
+
+**CRITICAL**: When there are discrepancies between BDD scenarios and DDD patterns:
+- **BDD wins** - The acceptance criteria from feature files take precedence
+- Implement code that makes the BDD scenarios pass first
+- DDD patterns serve the BDD requirements, not the other way around
+- If BDD expects a specific response format, implement that format even if DDD suggests otherwise
+
+### CRITICAL DDD Architecture Rules
+
+**MANDATORY**: All implementations MUST follow full Domain-Driven Design pattern:
+
+1. **Domain Layer First** - Always create domain entities, value objects, and repository interfaces BEFORE infrastructure
+2. **No Test Entities in Production** - NEVER use `test/shared/entities/` in production code. Use `app/{domain}/infrastructure/*.orm-entity.ts`
+3. **Interface Injection** - Handlers MUST use `@Inject(IRepository)` not `@InjectRepository(Entity)`
+4. **Value Objects for Business Concepts** - Status and type fields MUST be value objects with validation
+5. **Mappers Are Required** - Always create explicit Domain↔ORM and Domain→DTO mappers
+
 ---
 
 ## Initial Input Prompt
@@ -114,31 +132,136 @@ export class <<COMMAND>>Command {
 }
 ```
 
-### Step 3: Implement Domain Entity (if needed)
+### Step 3: Implement Value Objects FIRST
 
-If tests require a new domain entity in `libs/domain`:
+**CRITICAL**: Create value objects BEFORE domain entities. Value objects handle validation and business rules.
+
+**Type Value Object:**
+
+```typescript
+// libs/domain/src/value-objects/<<DOMAIN>>/<<ENTITY>>-type.vo.ts
+export type <<ENTITY>>TypeValue = '<<TYPE_1>>' | '<<TYPE_2>>' | '<<TYPE_3>>';
+
+export class <<ENTITY>>Type {
+  static readonly VALID_TYPES: readonly <<ENTITY>>TypeValue[] = [
+    '<<TYPE_1>>', '<<TYPE_2>>', '<<TYPE_3>>'
+  ];
+
+  public static readonly <<TYPE_1_CONST>> = new <<ENTITY>>Type('<<TYPE_1>>');
+  public static readonly <<TYPE_2_CONST>> = new <<ENTITY>>Type('<<TYPE_2>>');
+  public static readonly <<TYPE_3_CONST>> = new <<ENTITY>>Type('<<TYPE_3>>');
+
+  private constructor(private readonly value: <<ENTITY>>TypeValue) {
+    if (!<<ENTITY>>Type.VALID_TYPES.includes(value)) {
+      throw new Error(`Invalid <<ENTITY>> type: ${value}`);
+    }
+  }
+
+  public static fromString(value: string): <<ENTITY>>Type {
+    if (!<<ENTITY>>Type.VALID_TYPES.includes(value as <<ENTITY>>TypeValue)) {
+      throw new Error(`Invalid <<ENTITY>> type: ${value}`);
+    }
+    return new <<ENTITY>>Type(value as <<ENTITY>>TypeValue);
+  }
+
+  toString(): string { return this.value; }
+  equals(other: <<ENTITY>>Type): boolean { return this.value === other.value; }
+}
+```
+
+**Status Value Object (with state machine):**
+
+```typescript
+// libs/domain/src/value-objects/<<DOMAIN>>/<<ENTITY>>-status.vo.ts
+export type <<ENTITY>>StatusValue = '<<STATUS_1>>' | '<<STATUS_2>>' | '<<STATUS_3>>';
+
+export class <<ENTITY>>Status {
+  static readonly VALID_STATUSES: readonly <<ENTITY>>StatusValue[] = [
+    '<<STATUS_1>>', '<<STATUS_2>>', '<<STATUS_3>>'
+  ];
+
+  public static readonly <<STATUS_1_CONST>> = new <<ENTITY>>Status('<<STATUS_1>>');
+  public static readonly <<STATUS_2_CONST>> = new <<ENTITY>>Status('<<STATUS_2>>');
+  public static readonly <<STATUS_3_CONST>> = new <<ENTITY>>Status('<<STATUS_3>>');
+
+  private constructor(private readonly value: <<ENTITY>>StatusValue) {
+    if (!<<ENTITY>>Status.VALID_STATUSES.includes(value)) {
+      throw new Error(`Invalid <<ENTITY>> status: ${value}`);
+    }
+  }
+
+  public static fromString(value: string): <<ENTITY>>Status {
+    if (!<<ENTITY>>Status.VALID_STATUSES.includes(value as <<ENTITY>>StatusValue)) {
+      throw new Error(`Invalid <<ENTITY>> status: ${value}`);
+    }
+    return new <<ENTITY>>Status(value as <<ENTITY>>StatusValue);
+  }
+
+  toString(): string { return this.value; }
+  equals(other: <<ENTITY>>Status): boolean { return this.value === other.value; }
+
+  canTransitionTo(newStatus: <<ENTITY>>Status): boolean {
+    const transitions: Record<<<ENTITY>>StatusValue, <<ENTITY>>StatusValue[]> = {
+      '<<STATUS_1>>': ['<<STATUS_2>>'],
+      '<<STATUS_2>>': ['<<STATUS_3>>'],
+      '<<STATUS_3>>': [],
+    };
+    return transitions[this.value]?.includes(newStatus.value as <<ENTITY>>StatusValue) ?? false;
+  }
+
+  validateTransitionTo(newStatus: <<ENTITY>>Status): void {
+    if (!this.canTransitionTo(newStatus)) {
+      throw new Error(`Cannot transition from '${this.value}' to '${newStatus.value}'`);
+    }
+  }
+}
+```
+
+**Export from libs/domain/src/index.ts**
+
+### Step 4: Implement Domain Entity (uses Value Objects)
+
+**CRITICAL**: Domain entity must use value objects, NOT strings for status/type.
 
 ```typescript
 // libs/domain/src/entities/<<ENTITY>>.entity.ts
+import { <<ENTITY>>Type } from '../value-objects/<<DOMAIN>>/<<ENTITY>>-type.vo';
+import { <<ENTITY>>Status } from '../value-objects/<<DOMAIN>>/<<ENTITY>>-status.vo';
+
 export class <<ENTITY>> {
   constructor(
     private readonly id: string,
-    private <<FIELD_1>>: string,
-    private <<FIELD_2>>: string,
+    private readonly orgId: string,
+    private type: <<ENTITY>>Type,
+    private status: <<ENTITY>>Status,
+    private title: string,
+    private description: string | null,
     private readonly createdAt: Date,
     private updatedAt: Date,
   ) {}
 
-  // Getters (immutable access)
+  // Immutable getters
   getId(): string { return this.id; }
-  get<<FIELD_1>>(): string { return this.<<FIELD_1>>; }
-  get<<FIELD_2>>(): string { return this.<<FIELD_2>>; }
+  getOrgId(): string { return this.orgId; }
+  getType(): <<ENTITY>>Type { return this.type; }
+  getStatus(): <<ENTITY>>Status { return this.status; }
+  getTitle(): string { return this.title; }
+  getDescription(): string | null { return this.description; }
   getCreatedAt(): Date { return this.createdAt; }
   getUpdatedAt(): Date { return this.updatedAt; }
 
-  // Business methods
-  update<<FIELD_1>>(value: string): void {
-    this.<<FIELD_1>> = value;
+  // Business methods with validation
+  updateTitle(newTitle: string): void {
+    if (!newTitle || newTitle.trim().length === 0) {
+      throw new Error('Title cannot be empty');
+    }
+    this.title = newTitle;
+    this.updatedAt = new Date();
+  }
+
+  transitionTo(newStatus: <<ENTITY>>Status): void {
+    this.status.validateTransitionTo(newStatus);
+    this.status = newStatus;
     this.updatedAt = new Date();
   }
 }
@@ -146,7 +269,7 @@ export class <<ENTITY>> {
 
 **Export from libs/domain/src/index.ts**
 
-### Step 4: Implement Domain Event (if needed)
+### Step 5: Implement Domain Event (if needed)
 
 If command handler tests expect events:
 
@@ -163,7 +286,7 @@ export class <<ENTITY>>CreatedEvent {
 
 **Export from libs/domain/src/index.ts**
 
-### Step 5: Implement Repository Interface (if needed)
+### Step 6: Implement Repository Interface (if needed)
 
 ```typescript
 // libs/domain/src/repositories/<<ENTITY>>.repository.interface.ts
@@ -172,15 +295,19 @@ import { <<ENTITY>> } from '../entities/<<ENTITY>>.entity';
 export interface I<<ENTITY>>Repository {
   save(entity: <<ENTITY>>): Promise<void>;
   findById(id: string): Promise<<<ENTITY>> | null>;
-  findBy<<FIELD>>(value: string): Promise<<<ENTITY>> | null>;
+  findByOrgId(orgId: string): Promise<<<ENTITY>>[]>;
+  findByStatus(orgId: string, status: string): Promise<<<ENTITY>>[]>;
 }
 
+// CRITICAL: Symbol token for DI
 export const I<<ENTITY>>Repository = Symbol('I<<ENTITY>>Repository');
 ```
 
 **Export from libs/domain/src/index.ts**
 
-### Step 6: Implement ORM Entity (if needed)
+### Step 7: Implement ORM Entity (with Value Object getters/setters)
+
+**CRITICAL**: ORM entity must be in `app/{domain}/infrastructure/`, NOT in `test/shared/entities/`.
 
 ```typescript
 // apps/ip-hub-backend/src/app/<<DOMAIN>>/infrastructure/<<ENTITY>>.orm-entity.ts
@@ -188,20 +315,55 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import {
+  <<ENTITY>>Type,
+  <<ENTITY>>TypeValue,
+  <<ENTITY>>Status,
+  <<ENTITY>>StatusValue,
+} from '@ip-hub-backend/domain';
 
 @Entity('<<TABLE_NAME>>')
 export class <<ENTITY>>Entity {
   @PrimaryColumn('uuid')
   id!: string;
 
-  @Column()
-  <<FIELD_1>>!: string;
+  @Column('uuid')
+  @Index()
+  orgId!: string;
 
-  @Column({ nullable: true })
-  <<FIELD_2>>?: string;
+  // Value object with getter/setter pattern
+  @Column({ type: 'varchar', length: 50 })
+  private _type!: <<ENTITY>>TypeValue;
+
+  get type(): <<ENTITY>>Type {
+    return <<ENTITY>>Type.fromString(this._type);
+  }
+
+  set type(value: <<ENTITY>>Type) {
+    this._type = value.toString() as <<ENTITY>>TypeValue;
+  }
+
+  // Status with state machine validation
+  @Column({ type: 'varchar', length: 50, default: '<<DEFAULT_STATUS>>' })
+  private _status!: <<ENTITY>>StatusValue;
+
+  get status(): <<ENTITY>>Status {
+    return <<ENTITY>>Status.fromString(this._status);
+  }
+
+  set status(value: <<ENTITY>>Status) {
+    this._status = value.toString() as <<ENTITY>>StatusValue;
+  }
+
+  @Column({ type: 'varchar', length: 500 })
+  title!: string;
+
+  @Column({ type: 'text', nullable: true })
+  description!: string | null;
 
   @CreateDateColumn()
   createdAt!: Date;
@@ -213,7 +375,7 @@ export class <<ENTITY>>Entity {
 
 **Add to test-database.ts ALL_ENTITIES array if new entity**
 
-### Step 7: Implement Mappers
+### Step 8: Implement Mappers
 
 **Domain <-> ORM Entity Mapper:**
 
@@ -265,7 +427,7 @@ export class <<ENTITY>>DtoMapper {
 }
 ```
 
-### Step 8: Implement Repository (if needed)
+### Step 9: Implement Repository (if needed)
 
 ```typescript
 // apps/ip-hub-backend/src/app/<<DOMAIN>>/infrastructure/<<ENTITY>>.repository.ts
@@ -295,7 +457,7 @@ export class <<ENTITY>>Repository implements I<<ENTITY>>Repository {
 }
 ```
 
-### Step 9: Implement Handler
+### Step 10: Implement Handler
 
 **Query Handler:**
 
@@ -369,7 +531,7 @@ export class <<COMMAND>>Handler implements ICommandHandler<<<COMMAND>>Command> {
 npx nx test ip-hub-backend --testPathPattern="<<HANDLER>>.spec"
 ```
 
-### Step 10: Implement Controller Endpoint
+### Step 11: Implement Controller Endpoint
 
 ```typescript
 // apps/ip-hub-backend/src/bffe/<<FEATURE>>/<<FEATURE>>.controller.ts
@@ -401,7 +563,7 @@ export class <<FEATURE>>Controller {
 }
 ```
 
-### Step 11: Create and Register Module
+### Step 12: Create and Register Module
 
 ```typescript
 // apps/ip-hub-backend/src/app/<<DOMAIN>>/<<DOMAIN>>.module.ts
@@ -457,18 +619,23 @@ import { <<DOMAIN>>Module } from '../../src/app/<<DOMAIN>>/<<DOMAIN>>.module';
 // Add to imports array in createTestApp()
 ```
 
-### Step 12: Run Integration Tests
+### Step 13: Run Integration Tests
 
 ```bash
-npx nx test ip-hub-backend --testPathPattern="integration/<<FEATURE>>"
+# Run integration tests - uses test:integration target
+npx nx test:integration ip-hub-backend --testPathPattern="<<FEATURE>>"
 ```
 
 **Should Pass**: All integration tests green.
 
-### Step 13: Run BDD E2E Tests
+### Step 14: Run BDD E2E Tests
 
 ```bash
-npx nx e2e ip-hub-backend-e2e --grep "<<SCENARIO_NAME>>"
+# Run E2E tests - uses test:e2e target with -- separator for Cucumber args
+npx nx test:e2e ip-hub-backend -- --name "<<SCENARIO_NAME>>"
+
+# Alternative: Run by tags
+npx nx test:e2e ip-hub-backend -- --tags "@<<TAG_NAME>>"
 ```
 
 **Should Pass**: BDD scenario green, completing the TDD cycle.
@@ -590,24 +757,40 @@ npx nx e2e ip-hub-backend-e2e --grep "<<SCENARIO_NAME>>"
 ## Verification Commands
 
 ```bash
-# 1. TypeScript compilation check
-npx tsc --noEmit
+# 1. TypeScript compilation check (with project reference)
+npx tsc --noEmit -p apps/ip-hub-backend/tsconfig.app.json
 
 # 2. Run unit tests for implemented handlers
 npx nx test ip-hub-backend --testPathPattern="<<DOMAIN>>.*handler.spec"
 
-# 3. Run integration tests
-npx nx test ip-hub-backend --testPathPattern="integration/<<FEATURE>>"
+# 3. Run integration tests - uses test:integration target
+npx nx test:integration ip-hub-backend --testPathPattern="<<FEATURE>>"
 
-# 4. Run all tests to ensure no regressions
+# 4. Run all unit tests to ensure no regressions
 npx nx test ip-hub-backend
 
-# 5. Run BDD E2E tests
-npx nx e2e ip-hub-backend-e2e --grep "<<SCENARIO_NAME>>"
+# 5. Run all integration tests
+npx nx test:integration ip-hub-backend
 
-# 6. Lint check
+# 6. Run BDD E2E tests - uses test:e2e target with -- separator
+npx nx test:e2e ip-hub-backend -- --name "<<SCENARIO_NAME>>"
+
+# 7. Run E2E tests by tags
+npx nx test:e2e ip-hub-backend -- --tags "@<<TAG_NAME>>"
+
+# 8. Lint check
 npx nx lint ip-hub-backend
 ```
+
+### Important Test Command Notes
+
+1. **Unit Tests**: `npx nx test ip-hub-backend` - standard Jest test runner
+2. **Integration Tests**: `npx nx test:integration ip-hub-backend` - separate target for DB tests with Testcontainers
+3. **E2E Tests**: `npx nx test:e2e ip-hub-backend` - runs Cucumber.js
+   - Use `--` to separate nx args from Cucumber args
+   - `--name "scenario name"` for specific scenarios
+   - `--tags "@tag1 and @tag2"` for tag-based filtering
+4. **TypeScript**: Always use `-p` flag with project tsconfig path
 
 ---
 
@@ -615,19 +798,34 @@ npx nx lint ip-hub-backend
 
 Before declaring implementation complete:
 
+### Test Status
 - [ ] All unit tests pass
 - [ ] All integration tests pass
 - [ ] BDD E2E tests for scenario pass
 - [ ] TypeScript compilation succeeds with no errors
 - [ ] Lint passes with no errors
 - [ ] No existing tests broken (regression check)
-- [ ] Code follows existing project patterns
+
+### DDD Architecture Validation
+- [ ] Domain entity exists in `libs/domain/src/entities/` (NOT in test/shared)
+- [ ] Value objects exist for status/type fields in `libs/domain/src/value-objects/`
+- [ ] Repository interface exists with Symbol token in `libs/domain/src/repositories/`
+- [ ] ORM entity exists in `app/{domain}/infrastructure/` (NOT in test/shared)
+- [ ] Domain↔ORM mapper exists in `app/{domain}/infrastructure/`
+- [ ] Domain→DTO mapper exists in `app/{domain}/queries/`
+- [ ] Handler uses `@Inject(IRepository)` (NOT `@InjectRepository`)
+
+### Registration
 - [ ] New modules registered in AppModule
-- [ ] New entities added to test-database.ts ALL_ENTITIES
+- [ ] New ORM entities added to test-database.ts ALL_ENTITIES
 - [ ] New modules added to test-app-factory.ts
-- [ ] Domain exports updated in libs/domain/src/index.ts
+- [ ] Domain exports updated in libs/domain/src/index.ts (entities, value objects, interfaces)
+- [ ] Module uses Symbol DI provider for repository
+
+### Code Quality
 - [ ] No unused imports or variables
-- [ ] Handler properly injects dependencies
+- [ ] No imports from `test/` directory in production code
+- [ ] Handler properly injects dependencies via interface
 
 ---
 
@@ -644,3 +842,40 @@ After implementation:
 - All failing tests from step 01 are now passing
 - BDD E2E scenario is green
 - Code is ready for optional refactoring (step 03) or next feature
+
+---
+
+## Implementation Order Summary (CRITICAL)
+
+**ALWAYS implement in this order - Domain Layer FIRST:**
+
+### Phase 1: Domain Layer (libs/domain/src/)
+1. Value Objects (type, status) - validation and business rules
+2. Domain Entity - uses value objects, business methods
+3. Repository Interface - contract + Symbol token
+4. Domain Event (if command) - cross-domain communication
+5. Export from libs/domain/src/index.ts
+
+### Phase 2: Infrastructure Layer (app/{domain}/infrastructure/)
+6. ORM Entity - TypeORM decorators, uses value object getters/setters
+7. Domain↔ORM Mapper - bidirectional conversion
+8. Repository Implementation - implements interface from libs/domain
+9. Add ORM entity to test-database.ts ALL_ENTITIES
+
+### Phase 3: Application Layer (app/{domain}/)
+10. Query/Command class - request object
+11. Handler - uses `@Inject(IRepository)`, NOT `@InjectRepository`
+12. Domain→DTO Mapper - converts domain to API contract
+
+### Phase 4: API Layer
+13. Controller endpoint - uses QueryBus/CommandBus
+14. Update Module - register with Symbol DI provider
+15. Register module in AppModule
+16. Add module to test-app-factory.ts
+
+**Anti-Patterns to AVOID:**
+- ❌ Using `test/shared/entities/` for production code
+- ❌ Using `@InjectRepository(Entity)` in handlers
+- ❌ Skipping value objects for status/type fields
+- ❌ Skipping domain entity (going straight to ORM entity)
+- ❌ Importing from `test/` directory in production code
