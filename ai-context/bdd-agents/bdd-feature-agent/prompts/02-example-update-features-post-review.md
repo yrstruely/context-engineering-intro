@@ -7,20 +7,21 @@ You are playing the role of: BDD Feature Agent for requirements refinement. Use 
 !!!! Important: Replace paths and actual review feedback !!!!
 
 {
-  "featureFile": "features/02-dashboard-overview/phase1-core-dashboard-overview.feature",
-  "relatedFeatures": [
-     "specs/02-dashboard-overview/phase2-enhanced-dashboard-overview.feature",
-     "specs/02-dashboard-overview/phase3-advanced-dashboard-overview.feature"
-  ],
-  "task": "02-update-features-post-review",
-  "reviewSource": "stakeholder_comments | user_feedback | gap_analysis",
-  "contextFile": "ai-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md",
-  "updateScope": "add_scenarios | update_existing | remove_scenarios | all"
+"featureFile": "features/01-onboarding/phase1-account-setup-authentication.feature",
+"relatedFeatures": [
+"specs/011-onboarding/phase2-enhanced-onboarding.feature",
+"specs/011-onboarding/phase2-enhanced-onboarding.feature"
+],
+"task": "02-update-features-post-review",
+"reviewSource": "stakeholder_comments | user_feedback | gap_analysis",
+"contextFile": "ai-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md",
+"updateScope": "add_scenarios | update_existing | remove_scenarios | all"
 }
 
 ## Review Instructions
 
 The user has made modifications to the specified feature file. Your task is to:
+
 1. Review the changes made to the feature file
 2. Add new scenarios where there are @todo tags or Rules without supporting scenarios
 3. Check other related feature files and update them based on changes made to the primary feature
@@ -90,33 +91,33 @@ The user has made modifications to the specified feature file. Your task is to:
 ## Expected Output (Agent's Response Schema)
 
 {
-  "updatedFiles": [
-    "tests/features/04-asset-dashboard/phase1-core-dashboard.feature",
-    "tests/features/04-asset-dashboard/phase2-enhanced-dashboard.feature"
-  ],
-  "scenariosAdded": 12,
-  "scenariosModified": 5,
-  "rulesCompleted": 3,
-  "todoItemsResolved": 8,
-  "consistencyIssuesFixed": 2,
-  "status": "success",
-  "summary": "Added 12 new scenarios to complete Rules and resolve @todo items. Updated 2 related feature files for consistency.",
-  "changeLog": {
-    "phase1": [
-      "Added 5 scenarios for 'Quick actions enable efficient application management' Rule",
-      "Completed @todo scenarios for fee tracking validation"
-    ],
-    "phase2": [
-      "Updated collaborator scenarios to include new role types",
-      "Added edge case scenarios for timeline modifications"
-    ]
-  },
-  "terminologyChanges": [
-    "Standardized 'Patent Agent' across all features (was 'IP Agent' in some)"
-  ],
-  "newGapsIdentified": [
-    "Conflict resolution when multiple users modify same application simultaneously"
-  ]
+"updatedFiles": [
+"tests/features/04-asset-dashboard/phase1-core-dashboard.feature",
+"tests/features/04-asset-dashboard/phase2-enhanced-dashboard.feature"
+],
+"scenariosAdded": 12,
+"scenariosModified": 5,
+"rulesCompleted": 3,
+"todoItemsResolved": 8,
+"consistencyIssuesFixed": 2,
+"status": "success",
+"summary": "Added 12 new scenarios to complete Rules and resolve @todo items. Updated 2 related feature files for consistency.",
+"changeLog": {
+"phase1": [
+"Added 5 scenarios for 'Quick actions enable efficient application management' Rule",
+"Completed @todo scenarios for fee tracking validation"
+],
+"phase2": [
+"Updated collaborator scenarios to include new role types",
+"Added edge case scenarios for timeline modifications"
+]
+},
+"terminologyChanges": [
+"Standardized 'Patent Agent' across all features (was 'IP Agent' in some)"
+],
+"newGapsIdentified": [
+"Conflict resolution when multiple users modify same application simultaneously"
+]
 }
 
 ## Project-Specific Context
@@ -126,6 +127,7 @@ The user has made modifications to the specified feature file. Your task is to:
 **Pattern 1: Completing @todo Scenarios**
 
 Before:
+
 ```gherkin
 Rule: Users can modify filing strategies
 
@@ -135,6 +137,7 @@ Rule: Users can modify filing strategies
 ```
 
 After:
+
 ```gherkin
 Rule: Users can modify filing strategies
 
@@ -151,12 +154,14 @@ Rule: Users can modify filing strategies
 **Pattern 2: Adding Scenarios to Rules Without Examples**
 
 Before:
+
 ```gherkin
 Rule: Collaborators have role-based access permissions
   # No scenarios yet
 ```
 
 After:
+
 ```gherkin
 Rule: Collaborators have role-based access permissions
 
@@ -191,11 +196,13 @@ Rule: Collaborators have role-based access permissions
 **Pattern 3: Propagating Changes to Related Features**
 
 If phase1-core-dashboard.feature adds a new business rule:
+
 ```gherkin
 Rule: Users receive notifications for deadline approaching
 ```
 
 Then phase2-enhanced-dashboard.feature should extend it:
+
 ```gherkin
 Rule: Users can configure notification preferences for deadlines
 
@@ -213,6 +220,7 @@ Rule: Users can configure notification preferences for deadlines
 ```
 
 And phase3-advanced-dashboard.feature could further extend:
+
 ```gherkin
 Rule: Users can set jurisdiction-specific notification rules
 
@@ -233,6 +241,7 @@ Rule: Users can set jurisdiction-specific notification rules
 When updating features, ensure:
 
 **Terminology Consistency**:
+
 - [ ] "Patent Agent" (not "IP Agent", "Patent Attorney", or variations)
 - [ ] "Filing Strategy" (not "Filing Plan" or "Protection Strategy")
 - [ ] "Jurisdiction" (not "Country" or "Region" unless specific)
@@ -241,6 +250,7 @@ When updating features, ensure:
 - [ ] "Patentability Score" (not "Novelty Score" or "Patent Score")
 
 **Persona Consistency**:
+
 - [ ] Primary user: Alice
 - [ ] Patent Agent: Bob (or Bob Smith)
 - [ ] Inventor/Collaborator: Carol (or Carol Johnson)
@@ -249,12 +259,14 @@ When updating features, ensure:
 - [ ] Additional personas: Frank, Grace, Henry, Igor, etc.
 
 **Currency and Format Consistency**:
+
 - [ ] Currency: "AED 10,500" (not "$10,500" or "AED10,500")
 - [ ] Dates: "2024-01-15" (ISO format) or "January 15th, 2024" (readable)
 - [ ] Percentages: "75%" or "100%"
 - [ ] Fractions: "7 over 10" or "7/10"
 
 **Component Naming Consistency**:
+
 - [ ] Section names in quotes: "Strategy" section
 - [ ] Sub-section naming: "Overall strategy" sub-section
 - [ ] Component naming: "Patentability score" component
@@ -262,6 +274,7 @@ When updating features, ensure:
 - [ ] Dropdown naming: "Selected filing strategy" dropdown
 
 **Tag Usage Consistency**:
+
 - [ ] Feature tags: @[feature-number] (e.g., @04-asset-dashboard)
 - [ ] Scenario tags: @frontend, @backend, @integration
 - [ ] Special tags: @wip, @todo (remove @todo when completing)
@@ -271,6 +284,7 @@ When updating features, ensure:
 **Update Type 1: Adding Edge Cases**
 
 Original scenario (happy path):
+
 ```gherkin
 Scenario: User selects filing strategy
   Given Alice has a patent application
@@ -279,6 +293,7 @@ Scenario: User selects filing strategy
 ```
 
 Add edge cases:
+
 ```gherkin
 Scenario: User changes filing strategy after partial completion
   Given Alice has a "Single" filing strategy for "Dubai/GCC"
@@ -352,24 +367,28 @@ Scenario Outline: User views fee tracking for different filing strategies
 When integrating stakeholder feedback:
 
 **Feedback Type: "Add missing business rule"**
+
 1. Identify the appropriate phase (1, 2, or 3)
 2. Create new Rule section
 3. Add 2-4 scenarios (happy path + edge cases)
 4. Update related phases if rule has progression
 
 **Feedback Type: "Clarify existing scenario"**
+
 1. Review the unclear scenario
 2. Add more specific Given/When/Then steps
 3. Include concrete data in examples
 4. Split into multiple scenarios if too complex
 
 **Feedback Type: "Fix terminology"**
+
 1. Document the correct term
 2. Update all occurrences across all phase files
 3. Update domain glossary
 4. Add to consistency checklist
 
 **Feedback Type: "Add validation rules"**
+
 1. Create validation-focused scenarios
 2. Cover both valid and invalid inputs
 3. Document expected error messages
@@ -378,12 +397,14 @@ When integrating stakeholder feedback:
 ### Phase Progression Guidelines
 
 **Phase 1 Updates**: Core functionality only
+
 - Basic CRUD operations
 - Simple validations
 - Happy path scenarios
 - Essential error handling
 
 **Phase 2 Updates**: Enhanced functionality
+
 - Complex validations
 - Multi-step workflows
 - Integration scenarios
@@ -391,6 +412,7 @@ When integrating stakeholder feedback:
 - User preferences
 
 **Phase 3 Updates**: Advanced functionality
+
 - Complex business logic
 - Multi-user scenarios
 - Optimization features
@@ -413,6 +435,7 @@ When integrating stakeholder feedback:
 Before finalizing updates:
 
 **Scenario Quality**:
+
 - [ ] All @todo tags removed or have specific scenarios
 - [ ] All Rules have at least one scenario
 - [ ] Scenarios use concrete examples (not generic data)
@@ -420,6 +443,7 @@ Before finalizing updates:
 - [ ] Proper Given/When/Then structure
 
 **Cross-File Consistency**:
+
 - [ ] Terminology matches across all phase files
 - [ ] Personas are consistent
 - [ ] Currency and formatting uniform
@@ -427,12 +451,14 @@ Before finalizing updates:
 - [ ] Tags applied correctly
 
 **Documentation**:
+
 - [ ] Gap comments updated (resolved items removed)
 - [ ] New gaps documented
 - [ ] Assumptions clearly stated
 - [ ] Change rationale documented
 
 **Coverage**:
+
 - [ ] Happy paths covered
 - [ ] Edge cases included
 - [ ] Error scenarios present
@@ -442,6 +468,7 @@ Before finalizing updates:
 ### Example Update Session
 
 **Before Update**:
+
 ```gherkin
 Feature: Patent Dashboard - Phase 1
 
@@ -453,6 +480,7 @@ Feature: Patent Dashboard - Phase 1
 ```
 
 **After Update**:
+
 ```gherkin
 Feature: Patent Dashboard - Phase 1
 
@@ -503,16 +531,19 @@ When updating the primary feature file, check these related files:
 **Update Propagation Example**:
 
 Change in `specs/04-asset-dashboard/phase1-core-dashboard.feature`:
+
 ```gherkin
 Rule: Users can modify filing strategies
 ```
 
 Should propagate to `tests/features/04-asset-dashboard/phase1-core-dashboard.feature`:
+
 ```gherkin
 # Same rule with same scenarios for test automation
 ```
 
 And extend in `specs/04-asset-dashboard/phase2-enhanced-dashboard.feature`:
+
 ```gherkin
 Rule: Users can modify filing strategies with advanced options
   # Extended scenarios with more complex modifications

@@ -8,12 +8,7 @@ project context: @documentation/ and @documentation/domain-model-specification/
 !!!! Important: Replace paths and context with actual values !!!!
 
 {
-"specificationFiles": [
-"specs/<<YOUR-DOC-HERE>>.png",
-"specs/<<YOUR-DOC-HERE>>.png",
-"specs/<<YOUR-FOLDER-HERE>>/requirements.md",
-"specs/<<YOUR-FOLDER-HERE>>/requirements.md"
-],
+"specificationFilesDirectory": "specs/<<YOUR-DIR-HERE>>",
 "task": "01-generate-features-from-figma",
 "outputDirectory": "specs/<<YOUR-FOLDER-HERE>>/",
 "contextFile": "ai-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md",
@@ -27,20 +22,17 @@ project context: @documentation/ and @documentation/domain-model-specification/
 ## BDD Feature Agent Behavior (Step-by-Step)
 
 1. **Review BDD Agent Context**
-
    - Read the BDD agent context file at `ai-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md`
    - Understand the declarative BDD approach and Gherkin best practices
    - Review the IP Hub domain glossary and business rules
 
 2. **Analyze Existing Features for Consistency**
-
    - Review existing feature files in `specs/` directory (if they exist)
    - Study the feature structure, naming conventions, and domain language
    - Identify common patterns and reusable steps
    - Note the feature organization and tagging strategy
 
 3. **Process Specification Files**
-
    - Review all specification files (screenshots, wireframes, requirements documents)
    - Extract behavioral requirements from visual designs
    - Identify user interactions, information displays, and state changes
@@ -48,7 +40,6 @@ project context: @documentation/ and @documentation/domain-model-specification/
    - Map visual elements to domain entities and actions
 
 4. **Perform Gap Analysis**
-
    - Identify missing requirements and undefined behaviors
    - Document edge cases not covered in specifications
    - Flag ambiguities and contradictions
@@ -56,7 +47,6 @@ project context: @documentation/ and @documentation/domain-model-specification/
    - Create questions for clarification
 
 5. **Generate Feature Files by Phase**
-
    - Create separate feature files for each phase if specifications include phase breakdown
    - Follow naming convention: `phase[N]-[descriptive-name].feature`
    - Use declarative Gherkin style (behavior, not implementation)
@@ -65,7 +55,6 @@ project context: @documentation/ and @documentation/domain-model-specification/
    - Add appropriate tags (@frontend, @backend, @integration)
 
 6. **Document Domain Language**
-
    - Extract domain-specific terminology from specifications
    - Create or update domain glossary
    - Ensure consistent terminology across all scenarios
@@ -393,19 +382,16 @@ At the end of each feature file, document gaps as comments:
 ## Workflow: Processing Asset Dashboard Specification
 
 1. **Review Context**:
-
    - Read BDD agent context
    - Review existing features in specs/03-\*/
    - Study IP Hub domain glossary
 
 2. **Analyze Specifications**:
-
    - View specs/<<YOUR-DOC-HERE>>.png
    - Extract visual elements and user interactions
    - Identify sections: Strategy, Application Progress, Collaboration, Intelligence
 
 3. **Identify Behaviors**:
-
    - Dashboard displays patent overview
    - User selects filing strategies
    - User tracks application progress
@@ -413,13 +399,11 @@ At the end of each feature file, document gaps as comments:
    - User views prior art results
 
 4. **Generate Scenarios**:
-
    - Phase 1: Core viewing and basic interactions
    - Phase 2: Advanced interactions and modifications
    - Phase 3: Complex workflows and integrations
 
 5. **Document Gaps**:
-
    - Authentication requirements unclear
    - Notification system not specified
    - Multi-currency support undefined

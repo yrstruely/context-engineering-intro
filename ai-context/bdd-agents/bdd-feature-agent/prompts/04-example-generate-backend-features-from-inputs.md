@@ -3,6 +3,7 @@
 ## Purpose
 
 Generate backend-focused BDD feature files that complement frontend feature files. Backend features focus on:
+
 1. **BFFE API behavior** - Testing the Backend-For-Frontend layer via HTTP/axios calls
 2. **CQRS operations** - Commands that mutate state and queries that read data
 3. **Domain events** - Event emission, handling, and cross-context communication
@@ -13,18 +14,18 @@ Generate backend-focused BDD feature files that complement frontend feature file
 
 ```json
 {
-  "specContext": "specs/02-dashboard-overview",
+  "specContext": "specs/011-onboarding",
   "task": "04-generate-backend-features-from-inputs",
-  "outputDirectory": "specs/02-dashboard-overview/backend/",
+  "outputDirectory": "specs/011-onboarding/backend/",
   "frontendFeatures": [
-    "specs/02-dashboard-overview/phase1-core-dashboard-overview.feature",
-    "specs/02-dashboard-overview/phase2-enhanced-dashboard-overview.feature"
+    "specs/011-onboarding/phase1-core-dashboard-overview.feature",
+    "specs/011-onboarding/phase2-enhanced-dashboard-overview.feature"
   ],
   "specPackFiles": {
-    "bffeSpec": "specs/02-dashboard-overview/bffe-spec.md",
-    "cqrsContract": "specs/02-dashboard-overview/cqrs-contract.md",
-    "coreServicesSpec": "specs/02-dashboard-overview/core-services-spec.md",
-    "nonFunctionalRequirements": "specs/02-dashboard-overview/non-functional-requirements.md"
+    "bffeSpec": "specs/011-onboarding/bffe-spec.md",
+    "cqrsContract": "specs/011-onboarding/cqrs-contract.md",
+    "coreServicesSpec": "specs/011-onboarding/core-services-spec.md",
+    "nonFunctionalRequirements": "specs/011-onboarding/non-functional-requirements.md"
   },
   "domainModelDocs": "docs/domain-model-specification/",
   "userPersonas": "specs/user-types-and-personas/user-types-and-personas.md",
@@ -62,35 +63,45 @@ Use the instructions in `workflow-context/bdd-agents/bdd-feature-agent/bdd-agent
 Create separate feature files for each category:
 
 #### A. BFFE API Features
+
 Test the Backend-For-Frontend API layer using HTTP calls (axios):
+
 - Request/response validation
 - Authentication and authorization
 - Error handling and status codes
 - API versioning and compatibility
 
 #### B. CQRS Command Features
+
 Test state-changing operations:
+
 - Command validation and preconditions
 - Domain event emission
 - Error handling and invariants
 - Idempotency where applicable
 
 #### C. CQRS Query Features
+
 Test read operations:
+
 - Query response structure
 - Filtering and pagination
 - Read model consistency
 - Performance under load
 
 #### D. Domain Event Features
+
 Test event-driven behavior:
+
 - Event emission on state changes
 - Event handler subscriptions
 - Cross-context event communication
 - Event ordering and reliability
 
 #### E. Non-Functional Requirement Features
+
 Test quality attributes:
+
 - Performance (response times, throughput)
 - Security (authentication, authorization, input validation)
 - Reliability (error handling, graceful degradation)
@@ -132,36 +143,36 @@ Scenario: PatentApplicationDrafted event is emitted when creating a patent
 
 ### 5. Tag Strategy for Backend Features
 
-| Tag | Purpose | Usage |
-|-----|---------|-------|
-| `@backend` | All backend tests | Apply to all backend scenarios |
-| `@api` | BFFE API tests | HTTP endpoint tests |
-| `@command` | CQRS command tests | State-changing operations |
-| `@query` | CQRS query tests | Read operations |
-| `@event` | Domain event tests | Event emission/handling |
-| `@integration` | Cross-service tests | Service orchestration |
-| `@performance` | Performance tests | Response time, throughput |
-| `@security` | Security tests | Auth, authz, input validation |
-| `@non-functional` | Non-functional requirements | Quality attribute tests |
+| Tag               | Purpose                     | Usage                          |
+| ----------------- | --------------------------- | ------------------------------ |
+| `@backend`        | All backend tests           | Apply to all backend scenarios |
+| `@api`            | BFFE API tests              | HTTP endpoint tests            |
+| `@command`        | CQRS command tests          | State-changing operations      |
+| `@query`          | CQRS query tests            | Read operations                |
+| `@event`          | Domain event tests          | Event emission/handling        |
+| `@integration`    | Cross-service tests         | Service orchestration          |
+| `@performance`    | Performance tests           | Response time, throughput      |
+| `@security`       | Security tests              | Auth, authz, input validation  |
+| `@non-functional` | Non-functional requirements | Quality attribute tests        |
 
 ### 6. Map Frontend to Backend Scenarios
 
 For each frontend scenario, identify the corresponding backend behavior:
 
-| Frontend Scenario | Backend Coverage |
-|-------------------|------------------|
-| "User views dashboard after login" | GET /dashboard/summary API, GetPortfolioSummary query |
-| "User dismisses alert notification" | POST /alerts/{id}/dismiss API, DismissNotification command, NotificationDismissed event |
+| Frontend Scenario                       | Backend Coverage                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------ |
+| "User views dashboard after login"      | GET /dashboard/summary API, GetPortfolioSummary query                                      |
+| "User dismisses alert notification"     | POST /alerts/{id}/dismiss API, DismissNotification command, NotificationDismissed event    |
 | "User creates a new patent application" | POST /actions/register API, DraftPatentApplication command, PatentApplicationDrafted event |
 
 ---
 
 ## Example Output: Dashboard Overview Backend Features
 
-### File: `specs/02-dashboard-overview/backend/phase1-bffe-api.feature`
+### File: `specs/011-onboarding/backend/phase1-bffe-api.feature`
 
 ```gherkin
-# specs/02-dashboard-overview/backend/phase1-bffe-api.feature
+# specs/011-onboarding/backend/phase1-bffe-api.feature
 @02-dashboard-overview @backend @api
 Feature: Dashboard BFFE API - Core Endpoints (Phase 1)
   In order to provide dashboard data to the frontend
@@ -339,10 +350,10 @@ Feature: Dashboard BFFE API - Core Endpoints (Phase 1)
 # 5. Error Codes - Should we use standard HTTP codes or custom error codes?
 ```
 
-### File: `specs/02-dashboard-overview/backend/phase1-cqrs-commands.feature`
+### File: `specs/011-onboarding/backend/phase1-cqrs-commands.feature`
 
 ```gherkin
-# specs/02-dashboard-overview/backend/phase1-cqrs-commands.feature
+# specs/011-onboarding/backend/phase1-cqrs-commands.feature
 @02-dashboard-overview @backend @command
 Feature: Dashboard CQRS Commands (Phase 1)
   In order to maintain consistent application state
@@ -463,10 +474,10 @@ Feature: Dashboard CQRS Commands (Phase 1)
 # 4. Audit Trail - Are all commands logged for compliance?
 ```
 
-### File: `specs/02-dashboard-overview/backend/phase1-cqrs-queries.feature`
+### File: `specs/011-onboarding/backend/phase1-cqrs-queries.feature`
 
 ```gherkin
-# specs/02-dashboard-overview/backend/phase1-cqrs-queries.feature
+# specs/011-onboarding/backend/phase1-cqrs-queries.feature
 @02-dashboard-overview @backend @query
 Feature: Dashboard CQRS Queries (Phase 1)
   In order to efficiently serve read operations
@@ -567,10 +578,10 @@ Feature: Dashboard CQRS Queries (Phase 1)
 # 4. Field Selection - Can clients request specific fields only?
 ```
 
-### File: `specs/02-dashboard-overview/backend/phase1-domain-events.feature`
+### File: `specs/011-onboarding/backend/phase1-domain-events.feature`
 
 ```gherkin
-# specs/02-dashboard-overview/backend/phase1-domain-events.feature
+# specs/011-onboarding/backend/phase1-domain-events.feature
 @02-dashboard-overview @backend @event
 Feature: Dashboard Domain Events (Phase 1)
   In order to maintain loose coupling between bounded contexts
@@ -684,10 +695,10 @@ Feature: Dashboard Domain Events (Phase 1)
 # 4. Cross-DC Replication - How are events replicated across regions?
 ```
 
-### File: `specs/02-dashboard-overview/backend/phase1-non-functional.feature`
+### File: `specs/011-onboarding/backend/phase1-non-functional.feature`
 
 ```gherkin
-# specs/02-dashboard-overview/backend/phase1-non-functional.feature
+# specs/011-onboarding/backend/phase1-non-functional.feature
 @02-dashboard-overview @backend @non-functional
 Feature: Dashboard Non-Functional Requirements (Phase 1)
   In order to provide a reliable and secure dashboard service
@@ -851,11 +862,11 @@ After running this agent with the example inputs, you should have:
 ```json
 {
   "featureFilesCreated": [
-    "specs/02-dashboard-overview/backend/phase1-bffe-api.feature",
-    "specs/02-dashboard-overview/backend/phase1-cqrs-commands.feature",
-    "specs/02-dashboard-overview/backend/phase1-cqrs-queries.feature",
-    "specs/02-dashboard-overview/backend/phase1-domain-events.feature",
-    "specs/02-dashboard-overview/backend/phase1-non-functional.feature"
+    "specs/011-onboarding/backend/phase1-bffe-api.feature",
+    "specs/011-onboarding/backend/phase1-cqrs-commands.feature",
+    "specs/011-onboarding/backend/phase1-cqrs-queries.feature",
+    "specs/011-onboarding/backend/phase1-domain-events.feature",
+    "specs/011-onboarding/backend/phase1-non-functional.feature"
   ],
   "scenarioCount": 48,
   "coverageMapping": {
@@ -875,14 +886,14 @@ After running this agent with the example inputs, you should have:
 
 ## Key Differences from Frontend Features
 
-| Aspect | Frontend Features | Backend Features |
-|--------|-------------------|------------------|
-| **Focus** | User interactions, UI behavior | API contracts, data flow, events |
-| **Language** | "Alice sees...", "Alice clicks..." | "The response contains...", "Event emitted..." |
-| **Tags** | @frontend, @ux | @backend, @api, @command, @query, @event |
-| **Assertions** | Visual elements, navigation | Status codes, response bodies, events |
-| **Test Runner** | Playwright, browser | Axios, database assertions |
-| **NFR Focus** | Accessibility, visual design | Performance, security, reliability |
+| Aspect          | Frontend Features                  | Backend Features                               |
+| --------------- | ---------------------------------- | ---------------------------------------------- |
+| **Focus**       | User interactions, UI behavior     | API contracts, data flow, events               |
+| **Language**    | "Alice sees...", "Alice clicks..." | "The response contains...", "Event emitted..." |
+| **Tags**        | @frontend, @ux                     | @backend, @api, @command, @query, @event       |
+| **Assertions**  | Visual elements, navigation        | Status codes, response bodies, events          |
+| **Test Runner** | Playwright, browser                | Axios, database assertions                     |
+| **NFR Focus**   | Accessibility, visual design       | Performance, security, reliability             |
 
 ## Best Practices
 
