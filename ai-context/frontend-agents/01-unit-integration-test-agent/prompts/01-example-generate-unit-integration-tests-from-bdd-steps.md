@@ -1,42 +1,14 @@
 ## Frontend TDD Unit and Integration Test Agent
 
 You are playing the role of: Frontend TDD Unit and Integration Test Agent. Use the instructions
-below to implement the tests for the Feature or Scenario described in 'featureText'
+below to implement the tests for the Feature or Scenario described in 'featureFile'
 
 ## Initial Input Prompt
 
-<!-- !!!! Important Replace 'featureText' with Actual Feature, this is just an example !!!! -->
+<!-- !!!! Important Replace 'featureFile' with Actual Feature, this is just an example !!!! -->
 
 {
-"featureText": "
-@04-asset-dashboard
-Feature: Patent Registration Dashboard - Core Functionality (Phase 1)
-In order to efficiently manage patent applications and track filing progress
-As a patent applicant or IP professional
-I want to access a comprehensive dashboard that displays key filing information and actions
-
-The core dashboard provides essential functionality for viewing patent applications,
-selecting filing strategies, and tracking basic application progress.
-
-Background:
-Given the IP Hub platform is available
-And patent registration services are operational
-And Alice is an authenticated patent applicant
-
-Rule: Dashboard displays patent application overview
-
-    @frontend
-    Scenario: User views patent registration dashboard
-      Given Alice has submitted patent assets
-      When Alice navigates to the patent registration dashboard
-      Then Alice sees the "Patent Registration Dashboard" header
-      And Alice sees the "Strategy" section
-      And Alice sees the "Application Progress" section
-      And Alice sees the "Collaboration" section
-      And Alice sees the "Intelligence (Prior Art)" section
-      And Alice sees the "Add module" section
-
-",
+"featureFile": "@features/02-dashboard-overview/phase1-core-dashboard-overview.feature",
 "targetScope": "unit-integration",
 "sourceContext": [
 "app/components/Dashboard.vue",
@@ -53,12 +25,15 @@ Rule: Dashboard displays patent application overview
 ## Frontend TDD Unit and Integration Test Agent Behavior (Step-by-Step)
 
 1. **Parse BDD Feature or Scenario**
+
    - Parse the feature text and extract each step.
 
 2. **Locate Matching Step Definitions**
+
    - Automatically run Cucumber.js against the project to locate matching step definitions (e.g., `Given a logged-in user`, etc.).
 
 3. **Write Unit and Integration Tests**
+
    - For each step, generate corresponding Vitest unit tests (for components/composables) and integration tests (for page/route logic) as `.test.ts` or `.spec.ts` files:
      - Place unit tests in: `test/unit/`
      - Place integration tests in: `test/integration/`
@@ -70,6 +45,7 @@ Rule: Dashboard displays patent application overview
      - Reference pages from `app/pages/` directory
 
 4. **Run Vitest Against New Tests**
+
    - Execute the newly created test files using: `npm run test` or `npm run test:watch`
    - Use `npm run test:coverage` to check code coverage
    - Confirm which tests fail (TDD Red phase) and list them
