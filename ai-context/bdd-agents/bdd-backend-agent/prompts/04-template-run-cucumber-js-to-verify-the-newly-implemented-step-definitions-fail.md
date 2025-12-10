@@ -29,22 +29,10 @@ In TDD/BDD workflow, after implementing step definitions but **before** implemen
 
 ## BDD Backend Agent Behavior (Step-by-Step)
 
-### Step 1: Ensure Prerequisites
-```bash
-# Ensure database is running (Testcontainers or Docker)
-docker-compose up -d
-
-# Ensure backend is running (for integration tests)
-npx nx serve ip-hub-backend --watch=false &
-
-# Or if using Testcontainers, ensure Docker is available
-docker info
-```
-
-### Step 2: Run Cucumber Tests
+### Step 1: Run Cucumber Tests
 ```bash
 # Run the E2E tests for the specific feature
-npx nx e2e ip-hub-backend-e2e
+npx nx test:e2e:local ip-hub-backend
 
 # Or run with more verbose output
 npx cucumber-js apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature \
@@ -53,7 +41,7 @@ npx cucumber-js apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature \
   --format html:reports/cucumber_report.html
 ```
 
-### Step 3: Analyze Failure Types
+### Step 2: Analyze Failure Types
 
 **Expected Failures (Good - Implementation Needed)**:
 - `404 Not Found` - API endpoint not implemented yet
@@ -68,7 +56,7 @@ npx cucumber-js apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature \
 - `500 Internal Server Error` - Server-side crash
 - Connection errors - Server not running or wrong URL
 
-### Step 4: Document Results
+### Step 3: Document Results
 
 Categorize each failing scenario:
 - **Ready for Implementation**: Fails for expected reasons (404, empty data)
@@ -140,7 +128,7 @@ Scenario: User views data
 
 ```bash
 # Run all E2E tests with verbose output
-npx nx e2e ip-hub-backend-e2e --verbose
+npx nx test:e2e:local ip-hub-backend --verbose
 
 # Run specific feature file
 npx cucumber-js apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature
@@ -158,7 +146,7 @@ open reports/cucumber_report.html
 npx tsc --noEmit
 
 # Check for undefined steps
-npx nx e2e ip-hub-backend-e2e --dry-run
+npx nx test:e2e:local ip-hub-backend --dry-run
 ```
 
 ## Post-Verification Checklist

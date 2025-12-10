@@ -19,7 +19,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 ## BDD Backend Agent Behavior (Step-by-Step)
 
 1. **Run Cucumber.js Dry Run**
-   - Execute: `npx nx test:e2e:local ip-hub-backend --dry-run`
+   - Execute: `npx nx test:e2e:local ip-hub-backend -- test/e2e/features/<<CURRENT-SPEC>>/ --dry-run`
    - This will identify undefined step definitions
    - Capture the output showing missing steps
 
