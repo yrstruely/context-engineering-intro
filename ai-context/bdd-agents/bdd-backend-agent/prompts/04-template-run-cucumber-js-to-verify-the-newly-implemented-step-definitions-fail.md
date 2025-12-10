@@ -7,9 +7,9 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 !!!! Important: No files to change for this one !!!!
 
 {
-  "featureFile": "apps/ip-hub-backend-e2e/features/<<YOUR-FEATURE-HERE>>.feature",
+  "featureFiles": "apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature",
   "stepDefinitionFiles": [
-    "apps/ip-hub-backend-e2e/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts"
+    "apps/ip-hub-backend/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts"
   ],
   "task": "04-verify-step-definitions-fail-correctly",
   "testFramework": "axios",
@@ -47,7 +47,7 @@ docker info
 npx nx e2e ip-hub-backend-e2e
 
 # Or run with more verbose output
-npx cucumber-js apps/ip-hub-backend-e2e/features/<<YOUR-FEATURE-HERE>>.feature \
+npx cucumber-js apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature \
   --format progress-bar \
   --format json:reports/cucumber_report.json \
   --format html:reports/cucumber_report.html
@@ -143,7 +143,7 @@ Scenario: User views data
 npx nx e2e ip-hub-backend-e2e --verbose
 
 # Run specific feature file
-npx cucumber-js apps/ip-hub-backend-e2e/features/<<YOUR-FEATURE-HERE>>.feature
+npx cucumber-js apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature
 
 # Run with fail-fast (stop on first failure)
 npx cucumber-js --fail-fast

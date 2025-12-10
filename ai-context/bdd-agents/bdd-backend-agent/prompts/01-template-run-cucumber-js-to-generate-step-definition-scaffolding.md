@@ -7,24 +7,24 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 !!!! Important: Replace feature file path with actual feature file !!!!
 
 {
-  "featureFile": "apps/ip-hub-backend-e2e/features/<<YOUR-FEATURE-HERE>>.feature",
+  "featureFiles": "apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature",
   "task": "01-generate-step-definition-scaffolding",
   "testFramework": "axios",
   "bddFramework": "cucumber",
   "projectType": "nestjs-e2e",
   "language": "typescript",
-  "outputDirectory": "apps/ip-hub-backend-e2e/features/step-definitions/"
+  "outputDirectory": "apps/ip-hub-backend/features/step-definitions/"
 }
 
 ## BDD Backend Agent Behavior (Step-by-Step)
 
 1. **Run Cucumber.js Dry Run**
-   - Execute: `npx nx e2e ip-hub-backend-e2e --dry-run` or `npx cucumber-js --dry-run --format progress`
+   - Execute: `npx nx test:e2e:local ip-hub-backend --dry-run`
    - This will identify undefined step definitions
    - Capture the output showing missing steps
 
 2. **Generate Step Definition Scaffolds**
-   - Create TypeScript step definition files in `apps/ip-hub-backend-e2e/features/step-definitions/`
+   - Create TypeScript step definition files in `apps/ip-hub-backend/features/step-definitions/`
    - Use async/await pattern for all steps
    - Import required types from `@cucumber/cucumber` and axios
    - Follow project naming conventions (kebab-case for files)
@@ -38,8 +38,8 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 
 {
   "scaffoldFiles": [
-    "apps/ip-hub-backend-e2e/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
-    "apps/ip-hub-backend-e2e/features/step-definitions/common-steps.ts"
+    "apps/ip-hub-backend/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
+    "apps/ip-hub-backend/features/step-definitions/common-steps.ts"
   ],
   "undefinedStepsCount": 25,
   "status": "success",
@@ -50,9 +50,9 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 ## Project-Specific Context
 
 ### Directory Structure
-- **Feature Files**: `apps/ip-hub-backend-e2e/features/**/*.feature`
-- **Step Definitions**: `apps/ip-hub-backend-e2e/features/step-definitions/*.ts`
-- **Support Files**: `apps/ip-hub-backend-e2e/features/support/`
+- **Feature Files**: `apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature`
+- **Step Definitions**: `apps/ip-hub-backend/features/step-definitions/*.ts`
+- **Support Files**: `apps/ip-hub-backend/features/support/`
   - `world.ts` - Custom World class with HTTP client, test context
   - `hooks.ts` - Before/After hooks for test setup and cleanup
   - `types.ts` - TypeScript interfaces for domain models
@@ -68,12 +68,12 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 - **Assertion Library**: Jest expect
 
 ### Cucumber Configuration
-Located in `apps/ip-hub-backend-e2e/cucumber.js`:
+Located in `apps/ip-hub-backend/cucumber.js`:
 ```javascript
 module.exports = {
   default: {
-    paths: ['apps/ip-hub-backend-e2e/features/**/*.feature'],
-    require: ['apps/ip-hub-backend-e2e/features/**/*.ts'],
+    paths: ['apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature'],
+    require: ['apps/ip-hub-backend/features/**/*.ts'],
     requireModule: ['ts-node/register', 'tsconfig-paths/register'],
     format: ['progress-bar', 'json:reports/cucumber_report.json', 'html:reports/cucumber_report.html'],
     formatOptions: { snippetInterface: 'async-await' },
@@ -101,14 +101,14 @@ Given('step text here', async function (this: IPHubWorld) {
 ### Commands
 ```bash
 # Generate scaffolding via dry run
-npx nx e2e ip-hub-backend-e2e --dry-run
+npx nx test:e2e:local ip-hub-backend --dry-run
 
 # Alternative: direct cucumber-js dry run
 export NODE_OPTIONS="--import=tsx/esm"
-npx cucumber-js apps/ip-hub-backend-e2e/features/**/*.feature --dry-run --format progress
+npx cucumber-js apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature --dry-run --format progress
 
 # Run E2E tests
-npx nx e2e ip-hub-backend-e2e
+npx nx test:e2e:local ip-hub-backend
 
 # View test results
 open reports/cucumber_report.html

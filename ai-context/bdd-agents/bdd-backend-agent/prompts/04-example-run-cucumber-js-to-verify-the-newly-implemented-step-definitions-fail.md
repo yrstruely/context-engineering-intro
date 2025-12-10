@@ -7,11 +7,11 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 !!!! Important: No files to change for this one !!!!
 
 {
-  "featureFile": "apps/ip-hub-backend-e2e/features/phase1-core-dashboard.feature",
+  "featureFiles": "apps/ip-hub-backend/features/011-onboarding/*.feature",
   "stepDefinitionFiles": [
-    "apps/ip-hub-backend-e2e/features/step-definitions/dashboard-steps.ts",
-    "apps/ip-hub-backend-e2e/features/step-definitions/application-steps.ts",
-    "apps/ip-hub-backend-e2e/features/step-definitions/alert-steps.ts"
+    "apps/ip-hub-backend/features/step-definitions/dashboard-steps.ts",
+    "apps/ip-hub-backend/features/step-definitions/application-steps.ts",
+    "apps/ip-hub-backend/features/step-definitions/alert-steps.ts"
   ],
   "task": "04-verify-step-definitions-fail-correctly",
   "testFramework": "axios",
@@ -46,16 +46,16 @@ docker info
 ### Step 2: Run Cucumber Tests
 ```bash
 # Run the E2E tests for the specific feature
-npx nx e2e ip-hub-backend-e2e
+npx nx test:e2e:local ip-hub-backend
 
 # Or run with more verbose output
-npx cucumber-js apps/ip-hub-backend-e2e/features/phase1-core-dashboard.feature \
+npx cucumber-js apps/ip-hub-backend/features/011-onboarding/*.feature \
   --format progress-bar \
   --format json:reports/cucumber_report.json \
   --format html:reports/cucumber_report.html
 
 # Run with tags to focus on specific scenarios
-npx cucumber-js apps/ip-hub-backend-e2e/features/**/*.feature --tags "@dashboard"
+npx cucumber-js apps/ip-hub-backend/features/011-onboarding/*.feature --tags "@dashboard"
 ```
 
 ### Step 3: Analyze Failure Types
@@ -214,10 +214,10 @@ Scenario: User views empty applications section
 
 ```bash
 # Run all E2E tests with verbose output
-npx nx e2e ip-hub-backend-e2e --verbose
+npx nx test:e2e:local ip-hub-backend --verbose
 
 # Run specific feature file
-npx cucumber-js apps/ip-hub-backend-e2e/features/phase1-core-dashboard.feature
+npx cucumber-js apps/ip-hub-backend/features/011-onboarding/*.feature
 
 # Run with tags
 npx cucumber-js --tags "@dashboard and not @wip"
@@ -235,7 +235,7 @@ open reports/cucumber_report.html
 npx tsc --noEmit
 
 # Check for undefined steps
-npx nx e2e ip-hub-backend-e2e --dry-run
+npx nx test:e2e:local ip-hub-backend --dry-run
 ```
 
 ## Post-Verification Checklist

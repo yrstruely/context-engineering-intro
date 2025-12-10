@@ -8,13 +8,13 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 
 {
   "changedFiles": [
-    "apps/ip-hub-backend-e2e/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
-    "apps/ip-hub-backend-e2e/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts"
+    "apps/ip-hub-backend/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
+    "apps/ip-hub-backend/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts"
   ],
   "sourceContext": [
-    "apps/ip-hub-backend-e2e/features/<<YOUR-FEATURE-HERE>>.feature",
-    "apps/ip-hub-backend-e2e/features/support/world.ts",
-    "apps/ip-hub-backend-e2e/features/support/types.ts",
+    "apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature",
+    "apps/ip-hub-backend/features/support/world.ts",
+    "apps/ip-hub-backend/features/support/types.ts",
     "specs/<<YOUR-SPEC-FOLDER>>/bffe-spec.md"
   ],
   "task": "03-update-step-definition-implementations-post-review",
@@ -28,7 +28,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 ## BDD Backend Agent Behavior (Step-by-Step)
 
 1. **Load and Analyze Changes**
-   - Retrieve the modified step definition files from `apps/ip-hub-backend-e2e/features/step-definitions/`
+   - Retrieve the modified step definition files from `apps/ip-hub-backend/features/step-definitions/`
    - Use git diff or byterover-mcp memory to compare with previous versions
    - Identify what changed: new steps, modified steps, removed steps, refactored code
 
@@ -64,7 +64,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 {
   "reviewedFiles": [
     {
-      "file": "apps/ip-hub-backend-e2e/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
+      "file": "apps/ip-hub-backend/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
       "changeType": "improved",
       "summary": "Added proper type annotations and improved error handling.",
       "specificImprovements": [
@@ -75,7 +75,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
       "remainingIssues": []
     },
     {
-      "file": "apps/ip-hub-backend-e2e/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
+      "file": "apps/ip-hub-backend/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
       "changeType": "regressed",
       "summary": "Introduced type safety issues",
       "specificRegressions": [
@@ -100,7 +100,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 - All function parameters properly typed
 - No `any` types used
 - Proper `this: IPHubWorld` context type
-- Interfaces defined in `apps/ip-hub-backend-e2e/features/support/types.ts`
+- Interfaces defined in `apps/ip-hub-backend/features/support/types.ts`
 - Imports from correct modules
 - DTOs imported from `@ip-hub/api-contracts`
 
@@ -231,5 +231,5 @@ npx nx e2e ip-hub-backend-e2e --dry-run
 npx nx e2e ip-hub-backend-e2e
 
 # View diffs
-git diff apps/ip-hub-backend-e2e/features/step-definitions/
+git diff apps/ip-hub-backend/features/step-definitions/
 ```
