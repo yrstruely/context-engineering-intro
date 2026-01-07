@@ -7,12 +7,12 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Generat
 !!!! Important: MSW handlers, step definitions, and BFFE spec must exist first !!!!
 
 {
-  "task": "phase3-07-generate-pact-contracts",
-  "phase": "3-pact-contract-generation",
-  "mswHandlersDirectory": "test/msw/handlers/",
-  "pactOutputDirectory": "test/pact/pacts/",
-  "bffeSpec": "specs/02-dashboard-overview/bffe-spec.md",
-  "command": "npm run pact:generate"
+"task": "phase3-07-generate-pact-contracts",
+"phase": "3-pact-contract-generation",
+"mswHandlersDirectory": "test/msw/handlers/",
+"pactOutputDirectory": "test/pact/pacts/",
+"bffeSpec": "specs/011-onboarding/bffe-spec.md",
+"command": "npm run pact:generate"
 }
 
 ## BDD Frontend Agent Behavior (Step-by-Step)
@@ -35,7 +35,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Generat
    - Confirm all MSW handlers are represented
 
 4. **Cross-Check Against BFFE Spec**
-   - **Read BFFE spec** from `specs/02-dashboard-overview/bffe-spec.md`
+   - **Read BFFE spec** from `specs/011-onboarding/bffe-spec.md`
    - **Verify endpoint paths match** BFFE spec exactly
    - **Verify response schemas match** BFFE spec definitions
    - **Note any discrepancies** between Pact contracts and BFFE spec
@@ -53,9 +53,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Generat
 {
   "task": "phase3-07-generate-pact-contracts",
   "command": "npm run pact:generate",
-  "generatedContracts": [
-    "test/pact/pacts/frontend-backend-consumer.json"
-  ],
+  "generatedContracts": ["test/pact/pacts/frontend-backend-consumer.json"],
   "totalInteractions": 12,
   "interactions": [
     {
@@ -86,6 +84,7 @@ npm run pact:generate
 ```
 
 **What Happens**:
+
 1. Script reads MSW handlers from `test/msw/handlers/`
 2. Analyzes each HTTP handler (http.get, http.post, etc.)
 3. Extracts request patterns and response structures
@@ -95,6 +94,7 @@ npm run pact:generate
 ### Step 2: Understand Generated Contract Structure
 
 Example generated contract:
+
 ```json
 {
   "consumer": {
@@ -179,6 +179,7 @@ Example generated contract:
 ### Step 3: Verify Contract Quality
 
 Check that contracts include:
+
 - ✅ Clear interaction descriptions
 - ✅ Accurate request paths and methods
 - ✅ Query parameters where applicable
@@ -192,19 +193,23 @@ Check that contracts include:
 Pact uses matchers to define flexible contract validation:
 
 **Type Matcher** (`match: type`):
+
 - Validates field exists and is correct type
 - Doesn't validate exact value
 - Example: `activePatents: 45` → Backend can return any number
 
 **Equality Matcher** (`match: equality`):
+
 - Validates exact value
 - Use for constants (status codes, fixed strings)
 
 **Regex Matcher** (`match: regex`):
+
 - Validates pattern
 - Use for IDs, dates, emails
 
 Example from generated contract:
+
 ```json
 {
   "$.data.summary.activePatents": {
@@ -212,6 +217,7 @@ Example from generated contract:
   }
 }
 ```
+
 Means: `activePatents` must be a number, but can be any value
 
 ## Project-Specific Context
@@ -237,6 +243,7 @@ Means: `activePatents` must be a number, but can be any value
 ### Contract Naming
 
 Generated contract file:
+
 ```
 frontend-backend-consumer.json
 ```
@@ -246,6 +253,7 @@ Format: `{consumer}-{provider}-consumer.json`
 ### Consumer-Driven Contracts
 
 **Important Concept**:
+
 - ✅ Pact contracts define what **frontend NEEDS** from backend
 - ✅ Backend implements to **match the contract**
 - ✅ This is "consumer-driven" contracts
@@ -279,17 +287,21 @@ Contracts written to: test/pact/pacts/
 After successful Pact generation, inform the developer to:
 
 1. **Review Generated Contracts**
+
    ```bash
    cat test/pact/pacts/frontend-backend-consumer.json | jq
    ```
+
    - Verify interaction descriptions are clear
    - Check request/response structures are accurate
    - Ensure all endpoints are represented
 
 2. **Proceed to Validation** (Phase 3 Step 2)
+
    ```bash
    npm run pact:validate
    ```
+
    - Validates MSW and Pact structures match
    - See: phase3-08-template-validate-pact-sync.md
 
@@ -297,6 +309,7 @@ After successful Pact generation, inform the developer to:
    ```bash
    npm run pact:workflow
    ```
+
    - Runs both generate and validate together
    - Recommended for efficiency
 
@@ -317,6 +330,7 @@ After successful Pact generation, inform the developer to:
 ## Verification Checklist
 
 Before proceeding to validation, verify:
+
 - [ ] Pact contract file exists in `test/pact/pacts/`
 - [ ] All MSW endpoints are represented as interactions
 - [ ] Interaction count matches expected endpoints
@@ -360,6 +374,7 @@ npm run pact:workflow
 ## Output Verification
 
 After completing Pact generation, confirm:
+
 1. ✅ Contract file exists in `test/pact/pacts/`
 2. ✅ All interactions generated successfully
 3. ✅ Interaction count matches MSW handlers

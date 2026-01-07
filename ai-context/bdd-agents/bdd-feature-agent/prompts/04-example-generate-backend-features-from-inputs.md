@@ -19,7 +19,8 @@ Generate backend-focused BDD feature files that complement frontend feature file
   "outputDirectory": "specs/011-onboarding/backend/",
   "frontendFeatures": [
     "specs/011-onboarding/phase1-core-dashboard-overview.feature",
-    "specs/011-onboarding/phase2-enhanced-dashboard-overview.feature"
+    "specs/011-onboarding/phase2-enhanced-dashboard-overview.feature",
+    "specs/012-capability-assessment/phase3-advanced-applicant-details.feature"
   ],
   "specPackFiles": {
     "bffeSpec": "specs/011-onboarding/bffe-spec.md",
@@ -27,7 +28,7 @@ Generate backend-focused BDD feature files that complement frontend feature file
     "coreServicesSpec": "specs/011-onboarding/core-services-spec.md",
     "nonFunctionalRequirements": "specs/011-onboarding/non-functional-requirements.md"
   },
-  "domainModelDocs": "docs/domain-model-specification/",
+  "domainModelDocs": "documentation/domain-model-specification/",
   "userPersonas": "specs/user-types-and-personas/user-types-and-personas.md",
   "contextFile": "workflow-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md"
 }

@@ -7,19 +7,19 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 !!!! Important: Replace feature file path with actual feature file !!!!
 
 {
-  "featureFile": "features/02-dashboard-overview/phase1-core-dashboard-overview.feature",
-  "task": "01-generate-step-definition-scaffolding",
-  "testFramework": "playwright",
-  "bddFramework": "cucumber",
-  "projectType": "nuxt3-e2e",
-  "language": "typescript",
-  "outputDirectory": "features/step-definitions/"
+"featureFile": "features/011-onboarding/phase1-account-setup-authentication.feature",
+"task": "01-generate-step-definition-scaffolding",
+"testFramework": "playwright",
+"bddFramework": "cucumber",
+"projectType": "nuxt3-e2e",
+"language": "typescript",
+"outputDirectory": "features/step-definitions/"
 }
 
 ## BDD Frontend Agent Behavior (Step-by-Step)
 
 1. **Run Cucumber.js Dry Run**
-   - Execute: `export NODE_OPTIONS='--import=tsx' && npx cucumber-js features/login.feature/02-dashboard-overview/phase1-core-dashboard-overview.feature --dry-run --format progress --import 'features/support/**/*.ts' --import 'features/step-definitions/**/*.ts'`
+   - Execute: `export NODE_OPTIONS='--import=tsx' && npx cucumber-js features/login.feature/011-onboarding/phase1-account-setup-authentication.feature --dry-run --format progress --import 'features/support/**/*.ts' --import 'features/step-definitions/**/*.ts'`
    - This will identify undefined step definitions
    - Capture the output showing missing steps
 
@@ -37,19 +37,20 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 ## Expected Output (Agent's Response Schema)
 
 {
-  "scaffoldFiles": [
-    "features/step-definitions/dashboard-steps.ts",
-    "features/step-definitions/common-steps.ts"
-  ],
-  "undefinedStepsCount": 25,
-  "status": "success",
-  "summary": "Generated scaffolding for 25 undefined steps across 2 step definition files",
-  "nextStep": "02-generate-step-definition-implementations-from-features-in-spec"
+"scaffoldFiles": [
+"features/step-definitions/dashboard-steps.ts",
+"features/step-definitions/common-steps.ts"
+],
+"undefinedStepsCount": 25,
+"status": "success",
+"summary": "Generated scaffolding for 25 undefined steps across 2 step definition files",
+"nextStep": "02-generate-step-definition-implementations-from-features-in-spec"
 }
 
 ## Project-Specific Context
 
 ### Directory Structure
+
 - **Feature Files**: `features/**/*.feature`
 - **Step Definitions**: `features/step-definitions/*.ts`
 - **Support Files**: `features/support/`
@@ -59,6 +60,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
   - `helpers.ts` - Utility functions (e.g., toTestId)
 
 ### Technology Stack
+
 - **BDD Framework**: @cucumber/cucumber 11.3.0
 - **Browser Automation**: Playwright 1.55.1
 - **Language**: TypeScript 5.9.3
@@ -66,7 +68,9 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 - **Project**: Nuxt 3 frontend with E2E tests
 
 ### Cucumber Configuration
+
 Located in `cucumber.cjs`:
+
 ```javascript
 {
   format: ['progress-bar', 'json:reports/cucumber_report.json', 'html:reports/cucumber_report.html'],
@@ -77,24 +81,27 @@ Located in `cucumber.cjs`:
 ```
 
 ### Step Definition Template
+
 ```typescript
-import { Given, When, Then } from '@cucumber/cucumber'
-import { expect } from '@playwright/test'
-import type { ICustomWorld } from '../support/world'
+import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
+import type { ICustomWorld } from '../support/world';
 
 Given('step text here', async function (this: ICustomWorld) {
-  if (!this.page) throw new Error('Page not initialized')
+  if (!this.page) throw new Error('Page not initialized');
   // Implementation here
-})
+});
 ```
 
 ### Naming Conventions
+
 - Step definition files: `domain-steps.ts` (e.g., `dashboard-steps.ts`, `user-steps.ts`)
 - Use TypeScript interfaces for type safety
 - Follow async/await pattern for all steps
 - Use `data-testid` attributes for element selection
 
 ### Commands
+
 ```bash
 # Generate scaffolding
 npm run test:e2e:dry

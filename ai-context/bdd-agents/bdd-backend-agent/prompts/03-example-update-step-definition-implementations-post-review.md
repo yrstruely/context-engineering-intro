@@ -8,13 +8,13 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 
 {
   "changedFiles": [
-    "apps/ip-hub-backend/features/step-definitions/dashboard-steps.ts",
-    "apps/ip-hub-backend/features/step-definitions/application-steps.ts"
+    "apps/ip-hub-backend-e2e/features/step-definitions/dashboard-steps.ts",
+    "apps/ip-hub-backend-e2e/features/step-definitions/application-steps.ts"
   ],
   "sourceContext": [
-    "apps/ip-hub-backend/features/011-onboarding/*.feature",
-    "apps/ip-hub-backend/features/support/world.ts",
-    "apps/ip-hub-backend/features/support/types.ts",
+    "apps/ip-hub-backend-e2e/features/phase1-core-dashboard.feature",
+    "apps/ip-hub-backend-e2e/features/support/world.ts",
+    "apps/ip-hub-backend-e2e/features/support/types.ts",
     "specs/02-dashboard-overview/bffe-spec.md"
   ],
   "task": "03-update-step-definition-implementations-post-review",
@@ -28,7 +28,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 ## BDD Backend Agent Behavior (Step-by-Step)
 
 1. **Load and Analyze Changes**
-   - Retrieve the modified step definition files from `apps/ip-hub-backend/features/step-definitions/`
+   - Retrieve the modified step definition files from `apps/ip-hub-backend-e2e/features/step-definitions/`
    - Use git diff or byterover-mcp memory to compare with previous versions
    - Identify what changed: new steps, modified steps, removed steps, refactored code
 
@@ -64,7 +64,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 {
   "reviewedFiles": [
     {
-      "file": "apps/ip-hub-backend/features/step-definitions/dashboard-steps.ts",
+      "file": "apps/ip-hub-backend-e2e/features/step-definitions/dashboard-steps.ts",
       "changeType": "improved",
       "summary": "Added proper type annotations and improved error handling. All steps now properly validate API responses.",
       "specificImprovements": [
@@ -76,7 +76,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
       "remainingIssues": []
     },
     {
-      "file": "apps/ip-hub-backend/features/step-definitions/application-steps.ts",
+      "file": "apps/ip-hub-backend-e2e/features/step-definitions/application-steps.ts",
       "changeType": "regressed",
       "summary": "Introduced type safety issues and removed important validation checks",
       "specificRegressions": [
@@ -114,7 +114,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 - All function parameters properly typed
 - No `any` types used
 - Proper `this: IPHubWorld` context type
-- Interfaces defined in `apps/ip-hub-backend/features/support/types.ts`
+- Interfaces defined in `apps/ip-hub-backend-e2e/features/support/types.ts`
 - Imports from correct modules
 - DTOs imported from `@ip-hub/api-contracts`
 
@@ -315,8 +315,8 @@ await this.factories.application.create({ type: 'patent' })
 
 After providing feedback, the agent should verify:
 1. Run TypeScript compiler: `npx tsc --noEmit`
-2. Run Cucumber dry run: `npx nx test:e2e:local ip-hub-backend --dry-run`
-3. Run actual tests: `npx nx test:e2e:local ip-hub-backend`
+2. Run Cucumber dry run: `npx nx e2e ip-hub-backend-e2e --dry-run`
+3. Run actual tests: `npx nx e2e ip-hub-backend-e2e`
 4. Check for runtime errors or unexpected failures
 
 ## Commands
@@ -325,11 +325,11 @@ After providing feedback, the agent should verify:
 npx tsc --noEmit
 
 # Validate step definitions
-npx nx test:e2e:local ip-hub-backend --dry-run
+npx nx e2e ip-hub-backend-e2e --dry-run
 
 # Run E2E tests
-npx nx test:e2e:local ip-hub-backend
+npx nx e2e ip-hub-backend-e2e
 
 # View diffs
-git diff apps/ip-hub-backend/features/step-definitions/
+git diff apps/ip-hub-backend-e2e/features/step-definitions/
 ```

@@ -7,17 +7,17 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 !!!! Important: no files to change for this one !!!!
 
 {
-  "scaffoldingFile": "temp/step-definition-scaffolds.txt",
-  "contextFile": "@ai-context/bdd-agents/bdd-frontend-agent/bdd-test-agent-context.md",
-  "task": "02-generate-step-definition-implementations",
-  "testFramework": "playwright",
-  "bddFramework": "cucumber",
-  "projectType": "nuxt3-e2e",
-  "language": "typescript",
-  "sourceContext": [
-    "features/phase1-core-dashboard.feature",
-    "specs/02-dashboard-overview/phase1-core-dashboard-overview.feature"
-  ]
+"scaffoldingFile": "temp/step-definition-scaffolds.txt",
+"contextFile": "@ai-context/bdd-agents/bdd-frontend-agent/bdd-test-agent-context.md",
+"task": "02-generate-step-definition-implementations",
+"testFramework": "playwright",
+"bddFramework": "cucumber",
+"projectType": "nuxt3-e2e",
+"language": "typescript",
+"sourceContext": [
+"features/011-onboarding/phase1-account-setup-authentication.feature",
+"specs/011-onboarding/phase1-account-setup-authentication.feature"
+]
 }
 
 ## BDD Frontend Agent Behavior (Step-by-Step)
@@ -55,6 +55,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 ## Implementation Rules
 
 ### Always Follow These Rules:
+
 - ✅ Use `@playwright/test` expect (NOT Chai or other assertion libraries)
 - ✅ Check `if (!this.page)` before any page interactions
 - ✅ Use async/await for all step functions
@@ -65,6 +66,7 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 - ✅ Store state in World object properties (this.patentApplications, this.collaborators, etc.)
 
 ### Never Do These:
+
 - ❌ Don't use synchronous functions
 - ❌ Don't use Chai assertions
 - ❌ Don't use `any` type
@@ -74,118 +76,147 @@ You are playing the role of: BDD Frontend Agent for E2E testing. Use the instruc
 ## Expected Output (Agent's Response Schema)
 
 {
-  "implementedSteps": 25,
-  "createdFiles": [
-    "features/step-definitions/dashboard-steps.ts",
-    "features/step-definitions/common-steps.ts",
-    "server/api/collaborators.ts",
-    "server/api/applications.ts"
-  ],
-  "updatedFiles": [
-    "features/support/types.ts",
-    "features/support/world.ts"
-  ],
-  "status": "success",
-  "summary": "Implemented 25 step definitions with proper TypeScript types and mock APIs",
-  "implementationNotes": [
-    "Created Collaborator interface in types.ts",
-    "Added mock collaborators API endpoint",
-    "Updated World interface with collaborators property"
-  ],
-  "nextStep": "03-update-step-definition-implementations-post-review"
+"implementedSteps": 25,
+"createdFiles": [
+"features/step-definitions/dashboard-steps.ts",
+"features/step-definitions/common-steps.ts",
+"server/api/collaborators.ts",
+"server/api/applications.ts"
+],
+"updatedFiles": [
+"features/support/types.ts",
+"features/support/world.ts"
+],
+"status": "success",
+"summary": "Implemented 25 step definitions with proper TypeScript types and mock APIs",
+"implementationNotes": [
+"Created Collaborator interface in types.ts",
+"Added mock collaborators API endpoint",
+"Updated World interface with collaborators property"
+],
+"nextStep": "03-update-step-definition-implementations-post-review"
 }
 
 ## Project-Specific Context
 
 ### World Object Structure
+
 Located in `features/support/world.ts`:
+
 ```typescript
 export interface ICustomWorld extends World {
-  browser: Browser | null
-  context: BrowserContext | null
-  page: Page | null
-  currentUser: Applicant | null
-  patentApplications: PatentApplication[]
-  collaborators: Collaborator[]
-  priorArtSearch: PriorArtSearch | null
-  filingStrategy: FilingStrategy | null
-  selectedJurisdictions: Jurisdiction[]
-  timeline: Milestone[]
-  fees: FeeTracking | null
-  recentActivities: Activity[]
+  browser: Browser | null;
+  context: BrowserContext | null;
+  page: Page | null;
+  currentUser: Applicant | null;
+  patentApplications: PatentApplication[];
+  collaborators: Collaborator[];
+  priorArtSearch: PriorArtSearch | null;
+  filingStrategy: FilingStrategy | null;
+  selectedJurisdictions: Jurisdiction[];
+  timeline: Milestone[];
+  fees: FeeTracking | null;
+  recentActivities: Activity[];
   // Helper methods
-  resetState(): void
-  createTestApplication(overrides?: Partial<PatentApplication>): PatentApplication
-  createTestCollaborator(overrides?: Partial<Collaborator>): Collaborator
+  resetState(): void;
+  createTestApplication(
+    overrides?: Partial<PatentApplication>
+  ): PatentApplication;
+  createTestCollaborator(overrides?: Partial<Collaborator>): Collaborator;
 }
 ```
 
 ### Common Step Definition Patterns
 
 #### Given Steps (Setup):
+
 ```typescript
-Given('Alice has submitted patent applications', async function (this: ICustomWorld) {
-  if (!this.page) throw new Error('Page not initialized')
+Given(
+  'Alice has submitted patent applications',
+  async function (this: ICustomWorld) {
+    if (!this.page) throw new Error('Page not initialized');
 
-  // Fetch from mock API
-  const response = await this.page.request.get('${baseUrl}/api/applications?type=patent')
-  expect(response.status()).toBe(200)
+    // Fetch from mock API
+    const response = await this.page.request.get(
+      '${baseUrl}/api/applications?type=patent'
+    );
+    expect(response.status()).toBe(200);
 
-  const result = await response.json()
-  expect(result.success).toBe(true)
+    const result = await response.json();
+    expect(result.success).toBe(true);
 
-  this.patentApplications = result.data
-})
+    this.patentApplications = result.data;
+  }
+);
 ```
 
 #### When Steps (Actions):
-```typescript
-When('Alice navigates to the patent registration dashboard', async function (this: ICustomWorld) {
-  if (!this.page) throw new Error('Page not initialized')
 
-  await this.page.goto('${baseUrl}/dashboard/patent')
-  await this.page.waitForLoadState('networkidle')
-})
+```typescript
+When(
+  'Alice navigates to the patent registration dashboard',
+  async function (this: ICustomWorld) {
+    if (!this.page) throw new Error('Page not initialized');
+
+    await this.page.goto('${baseUrl}/dashboard/patent');
+    await this.page.waitForLoadState('networkidle');
+  }
+);
 ```
 
 #### Then Steps (Assertions):
-```typescript
-Then('Alice sees the {string} header', async function (this: ICustomWorld, headerText: string) {
-  if (!this.page) throw new Error('Page not initialized')
 
-  const testId = toTestId(headerText)
-  const header = this.page.locator(`[data-testid="${testId}-header"]`)
-  await expect(header).toBeVisible()
-  await expect(header).toContainText(headerText)
-})
+```typescript
+Then(
+  'Alice sees the {string} header',
+  async function (this: ICustomWorld, headerText: string) {
+    if (!this.page) throw new Error('Page not initialized');
+
+    const testId = toTestId(headerText);
+    const header = this.page.locator(`[data-testid="${testId}-header"]`);
+    await expect(header).toBeVisible();
+    await expect(header).toContainText(headerText);
+  }
+);
 ```
 
 ### Data Table Handling
+
 ```typescript
-Then('Alice sees the {string} sub-section with these cards:', async function (
-  this: ICustomWorld,
-  subsectionName: string,
-  dataTable: DataTable
-) {
-  if (!this.page) throw new Error('Page not initialized')
+Then(
+  'Alice sees the {string} sub-section with these cards:',
+  async function (
+    this: ICustomWorld,
+    subsectionName: string,
+    dataTable: DataTable
+  ) {
+    if (!this.page) throw new Error('Page not initialized');
 
-  const cards = dataTable.raw().flat()
-  const testId = toTestId(subsectionName)
-  const subsection = this.page.locator(`[data-testid="${testId}-subsection"]`)
-  await expect(subsection).toBeVisible()
+    const cards = dataTable.raw().flat();
+    const testId = toTestId(subsectionName);
+    const subsection = this.page.locator(
+      `[data-testid="${testId}-subsection"]`
+    );
+    await expect(subsection).toBeVisible();
 
-  for (const card of cards) {
-    if (card !== 'Cards') { // Skip header
-      const cardId = toTestId(card)
-      const cardElement = subsection.locator(`[data-testid="${cardId}-card"]`)
-      await expect(cardElement).toBeVisible()
+    for (const card of cards) {
+      if (card !== 'Cards') {
+        // Skip header
+        const cardId = toTestId(card);
+        const cardElement = subsection.locator(
+          `[data-testid="${cardId}-card"]`
+        );
+        await expect(cardElement).toBeVisible();
+      }
     }
   }
-})
+);
 ```
 
 ### Mock API Pattern
+
 Create in `server/api/` directory:
+
 ```typescript
 // server/api/collaborators.ts
 export default defineEventHandler((event) => {
@@ -198,19 +229,21 @@ export default defineEventHandler((event) => {
         email: 'bob@example.com',
         role: 'Patent Agent',
         accessLevel: 'Full access',
-        lastActive: new Date()
-      }
-    ]
-  }
-})
+        lastActive: new Date(),
+      },
+    ],
+  };
+});
 ```
 
 ### Helper Functions
+
 Located in `features/support/helpers.ts`:
+
 ```typescript
 // Convert display text to data-testid format
 export function toTestId(text: string): string {
-  return text.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '')
+  return text.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '');
 }
 
 // Examples:
@@ -220,7 +253,9 @@ export function toTestId(text: string): string {
 ```
 
 ### IP Hub Domain Context
+
 This is an **IP (Intellectual Property) Hub** platform with:
+
 - **Asset Types**: Patents (primary), Trademarks, Copyrights
 - **Filing Strategies**: Single, Comprehensive
 - **Jurisdictions**: Dubai/GCC, International (PCT), National Offices, EPO
@@ -238,30 +273,26 @@ This is an **IP (Intellectual Property) Hub** platform with:
 - **Fee Tracking**: AED currency, phase-based fees
 
 ### Common Locator Patterns
+
 ```typescript
 // Sections
 `[data-testid="${testId}-section"]`
-
 // Sub-sections
 `[data-testid="${testId}-subsection"]`
-
 // Components
 `[data-testid="${testId}-component"]`
-
 // Buttons
 `[data-testid="${testId}-button"]`
-
 // Cards
 `[data-testid="${testId}-card"]`
-
 // Dropdowns
 `[data-testid="${testId}-dropdown"]`
-
 // Links
-`[data-testid="${testId}-link"]`
+`[data-testid="${testId}-link"]`;
 ```
 
 ### Best Practices
+
 1. **Always scroll elements into view**: `await element.scrollIntoViewIfNeeded()`
 2. **Use Playwright's auto-waiting**: No manual `waitForTimeout` unless necessary
 3. **Check visibility before interaction**: `await expect(element).toBeVisible()`
@@ -271,6 +302,7 @@ This is an **IP (Intellectual Property) Hub** platform with:
 7. **Follow existing patterns**: Review similar steps in existing files
 
 ### Test Execution
+
 ```bash
 # Run all E2E tests
 npm run test:e2e

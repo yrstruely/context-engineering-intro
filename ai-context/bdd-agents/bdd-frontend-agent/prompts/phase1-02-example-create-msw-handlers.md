@@ -7,20 +7,20 @@ You are playing the role of: BDD Frontend Agent - Phase 1 (MSW Handler Creation)
 !!!! Important: Use analysis file from Phase 1 Step 1 and BFFE spec !!!!
 
 {
-  "analysisFile": "temp/api-requirements-analysis.md",
-  "bffeSpec": "specs/02-dashboard-overview/bffe-spec.md",
-  "task": "phase1-02-create-msw-handlers",
-  "phase": "1-msw-handler-creation",
-  "domain": "dashboard",
-  "outputDirectory": "test/msw/handlers/",
-  "language": "typescript"
+"analysisFile": "temp/api-requirements-analysis.md",
+"bffeSpec": "specs/011-onboarding/bffe-spec.md",
+"task": "phase1-02-create-msw-handlers",
+"phase": "1-msw-handler-creation",
+"domain": "dashboard",
+"outputDirectory": "test/msw/handlers/",
+"language": "typescript"
 }
 
 ## BDD Frontend Agent Behavior (Step-by-Step)
 
 1. **Read API Requirements Analysis and BFFE Spec**
    - Read `temp/api-requirements-analysis.md` from Phase 1 Step 1
-   - **Read BFFE spec** from `specs/02-dashboard-overview/bffe-spec.md`
+   - **Read BFFE spec** from `specs/011-onboarding/bffe-spec.md`
    - Extract endpoint definitions
    - **Cross-reference with BFFE spec** for authoritative response schemas
    - Identify environment-specific data requirements
@@ -59,12 +59,8 @@ You are playing the role of: BDD Frontend Agent - Phase 1 (MSW Handler Creation)
 
 ```json
 {
-  "createdFiles": [
-    "test/msw/handlers/dashboard.ts"
-  ],
-  "updatedFiles": [
-    "test/msw/handlers/index.ts"
-  ],
+  "createdFiles": ["test/msw/handlers/dashboard.ts"],
+  "updatedFiles": ["test/msw/handlers/index.ts"],
   "handlersImplemented": 5,
   "endpointsHandled": [
     "GET /api/dashboard",
@@ -83,8 +79,8 @@ You are playing the role of: BDD Frontend Agent - Phase 1 (MSW Handler Creation)
 
 ```typescript
 // test/msw/handlers/[domain].ts
-import { http, HttpResponse, delay } from 'msw'
-import { MSW_CONFIG, getEnvironmentData } from '../config'
+import { http, HttpResponse, delay } from 'msw';
+import { MSW_CONFIG, getEnvironmentData } from '../config';
 
 // Define environment-specific mock data
 const dashboardData = getEnvironmentData({
@@ -93,16 +89,16 @@ const dashboardData = getEnvironmentData({
     summary: {
       activePatents: 1,
       pendingApplications: 0,
-      trademarks: 0
-    }
+      trademarks: 0,
+    },
   },
   'dev.local': {
     // Rich, varied data for UI development
     // Use values from Cucumber scenarios
     summary: {
-      activePatents: 45,  // ← From scenario: "Alice has 45 active patents"
-      pendingApplications: 23,  // ← From scenario
-      trademarks: 67
+      activePatents: 45, // ← From scenario: "Alice has 45 active patents"
+      pendingApplications: 23, // ← From scenario
+      trademarks: 67,
     },
     recentActivity: [
       {
@@ -110,52 +106,52 @@ const dashboardData = getEnvironmentData({
         type: 'application_submitted',
         title: 'Dubai Patent Application',
         timestamp: '2024-01-15T10:30:00Z',
-        user: 'Alice Johnson'
+        user: 'Alice Johnson',
       },
       {
         id: 'ACT-002',
         type: 'collaborator_invited',
         title: 'Bob Smith joined as Patent Agent',
         timestamp: '2024-01-14T15:20:00Z',
-        user: 'Alice Johnson'
+        user: 'Alice Johnson',
       },
       // Add more varied examples
-    ]
+    ],
   },
   ci: {
     // Deterministic data for CI/CD
     summary: {
       activePatents: 10,
       pendingApplications: 5,
-      trademarks: 15
-    }
-  }
-})
+      trademarks: 15,
+    },
+  },
+});
 
 export const dashboardHandlers = [
   // GET /api/dashboard - Main dashboard summary
   http.get('/api/dashboard', async () => {
-    await delay(MSW_CONFIG.delay)
+    await delay(MSW_CONFIG.delay);
 
     return HttpResponse.json({
       success: true,
-      data: dashboardData
-    })
+      data: dashboardData,
+    });
   }),
 
   // GET /api/dashboard/recent-activity - Activity feed
   http.get('/api/dashboard/recent-activity', async () => {
-    await delay(MSW_CONFIG.delay)
+    await delay(MSW_CONFIG.delay);
 
     return HttpResponse.json({
       success: true,
       data: dashboardData.recentActivity || [],
       meta: {
-        total: dashboardData.recentActivity?.length || 0
-      }
-    })
-  })
-]
+        total: dashboardData.recentActivity?.length || 0,
+      },
+    });
+  }),
+];
 ```
 
 ## Complex Handler Examples
@@ -165,26 +161,26 @@ export const dashboardHandlers = [
 ```typescript
 // GET /api/applications/:id
 http.get('/api/applications/:id', async ({ params }) => {
-  await delay(MSW_CONFIG.delay)
+  await delay(MSW_CONFIG.delay);
 
-  const application = applicationsData.find(app => app.id === params.id)
+  const application = applicationsData.find((app) => app.id === params.id);
 
   if (!application) {
     return HttpResponse.json(
       {
         success: false,
         error: 'Not Found',
-        message: 'Application not found'
+        message: 'Application not found',
       },
       { status: 404 }
-    )
+    );
   }
 
   return HttpResponse.json({
     success: true,
-    data: application
-  })
-})
+    data: application,
+  });
+});
 ```
 
 ### Handler with Query Parameters
@@ -192,20 +188,20 @@ http.get('/api/applications/:id', async ({ params }) => {
 ```typescript
 // GET /api/applications?type=patent&status=in_progress
 http.get('/api/applications', async ({ request }) => {
-  await delay(MSW_CONFIG.delay)
+  await delay(MSW_CONFIG.delay);
 
-  const url = new URL(request.url)
-  const type = url.searchParams.get('type')
-  const status = url.searchParams.get('status')
+  const url = new URL(request.url);
+  const type = url.searchParams.get('type');
+  const status = url.searchParams.get('status');
 
-  let filtered = applicationsData
+  let filtered = applicationsData;
 
   if (type) {
-    filtered = filtered.filter(app => app.type === type)
+    filtered = filtered.filter((app) => app.type === type);
   }
 
   if (status) {
-    filtered = filtered.filter(app => app.status === status)
+    filtered = filtered.filter((app) => app.status === status);
   }
 
   return HttpResponse.json({
@@ -213,10 +209,10 @@ http.get('/api/applications', async ({ request }) => {
     data: filtered,
     meta: {
       total: filtered.length,
-      filters: { type, status }
-    }
-  })
-})
+      filters: { type, status },
+    },
+  });
+});
 ```
 
 ### POST Handler with Request Body
@@ -224,9 +220,9 @@ http.get('/api/applications', async ({ request }) => {
 ```typescript
 // POST /api/applications
 http.post('/api/applications', async ({ request }) => {
-  await delay(MSW_CONFIG.delay)
+  await delay(MSW_CONFIG.delay);
 
-  const body = await request.json()
+  const body = await request.json();
 
   // Validate required fields
   if (!body.title || !body.type) {
@@ -234,10 +230,10 @@ http.post('/api/applications', async ({ request }) => {
       {
         success: false,
         error: 'Validation Error',
-        message: 'Title and type are required'
+        message: 'Title and type are required',
       },
       { status: 400 }
-    )
+    );
   }
 
   // Create new application
@@ -245,17 +241,17 @@ http.post('/api/applications', async ({ request }) => {
     id: `APP-${Date.now()}`,
     ...body,
     status: 'draft',
-    createdAt: new Date().toISOString()
-  }
+    createdAt: new Date().toISOString(),
+  };
 
   return HttpResponse.json(
     {
       success: true,
-      data: newApplication
+      data: newApplication,
     },
     { status: 201 }
-  )
-})
+  );
+});
 ```
 
 ### Error Scenario Handler
@@ -263,7 +259,7 @@ http.post('/api/applications', async ({ request }) => {
 ```typescript
 // GET /api/applications - Server error scenario
 http.get('/api/applications', async () => {
-  await delay(MSW_CONFIG.delay)
+  await delay(MSW_CONFIG.delay);
 
   // Simulate server error for testing error handling
   // In real implementation, you might condition this on environment
@@ -272,17 +268,17 @@ http.get('/api/applications', async () => {
       {
         success: false,
         error: 'Internal Server Error',
-        message: 'Database connection failed'
+        message: 'Database connection failed',
       },
       { status: 500 }
-    )
+    );
   }
 
   return HttpResponse.json({
     success: true,
-    data: applicationsData
-  })
-})
+    data: applicationsData,
+  });
+});
 ```
 
 ## Register Handler in Index
@@ -290,22 +286,23 @@ http.get('/api/applications', async () => {
 Update `test/msw/handlers/index.ts`:
 
 ```typescript
-import { dashboardHandlers } from './dashboard'
-import { applicationsHandlers } from './applications'
-import { assetsHandlers } from './assets'
-import { collaboratorsHandlers } from './collaborators'
+import { dashboardHandlers } from './dashboard';
+import { applicationsHandlers } from './applications';
+import { assetsHandlers } from './assets';
+import { collaboratorsHandlers } from './collaborators';
 
 export const handlers = [
   ...dashboardHandlers,
   ...applicationsHandlers,
   ...assetsHandlers,
-  ...collaboratorsHandlers
-]
+  ...collaboratorsHandlers,
+];
 ```
 
 ## Best Practices
 
 ### DO:
+
 ✅ **Use BFFE spec schemas** as authoritative response structure
 ✅ Use environment-specific data via `getEnvironmentData()`
 ✅ Return production-like response structures matching BFFE spec
@@ -318,6 +315,7 @@ export const handlers = [
 ✅ **Match exact endpoint paths** from BFFE spec (e.g., `/dashboard/summary` not `/api/dashboard/summary`)
 
 ### DON'T:
+
 ❌ Add test-specific query parameters (e.g., `?scenario=test`)
 ❌ Hardcode test-specific data in handlers
 ❌ Return minimal data (enrich with realistic variations)
@@ -330,12 +328,14 @@ export const handlers = [
 ## Environment Data Guidelines
 
 **Test Environment** (`test`):
+
 - Minimal data to satisfy specific test assertions
 - Predictable, simple datasets
 - 1-2 items maximum
 - Used for unit/integration tests
 
 **Local Development Environment** (`dev.local`):
+
 - Rich, varied data for UI development
 - Multiple examples showing different states
 - Use exact values from Cucumber scenarios
@@ -344,6 +344,7 @@ export const handlers = [
 - Used for `npm run dev` (local with MSW mocks)
 
 **CI Environment** (`ci`):
+
 - Deterministic, reproducible data
 - Consistent across runs
 - 3-5 items
@@ -352,6 +353,7 @@ export const handlers = [
 ## Project-Specific Context
 
 ### File Locations
+
 - **Handlers**: `test/msw/handlers/[domain].ts`
 - **Config**: `test/msw/config.ts`
 - **Index**: `test/msw/handlers/index.ts`
@@ -360,25 +362,27 @@ export const handlers = [
 ### MSW Configuration
 
 Located in `test/msw/config.ts`:
+
 ```typescript
 export const MSW_CONFIG = {
   delay: process.env.MSW_DELAY ? parseInt(process.env.MSW_DELAY) : 100,
-  env: process.env.MSW_ENV || 'dev.local'
-}
+  env: process.env.MSW_ENV || 'dev.local',
+};
 
 export function getEnvironmentData<T>(environments: {
-  test: T
-  'dev.local': T
-  ci: T
+  test: T;
+  'dev.local': T;
+  ci: T;
 }): T {
-  const env = MSW_CONFIG.env as keyof typeof environments
-  return environments[env] || environments['dev.local']
+  const env = MSW_CONFIG.env as keyof typeof environments;
+  return environments[env] || environments['dev.local'];
 }
 ```
 
 ### Common Response Patterns
 
 **Success Response**:
+
 ```typescript
 {
   success: true,
@@ -387,6 +391,7 @@ export function getEnvironmentData<T>(environments: {
 ```
 
 **Success with Metadata**:
+
 ```typescript
 {
   success: true,
@@ -400,6 +405,7 @@ export function getEnvironmentData<T>(environments: {
 ```
 
 **Error Response**:
+
 ```typescript
 {
   success: false,
@@ -411,6 +417,7 @@ export function getEnvironmentData<T>(environments: {
 ### Domain Organization
 
 Group handlers by domain:
+
 - **dashboard.ts**: Dashboard, recent activity, summaries
 - **applications.ts**: Patent/trademark/copyright applications
 - **assets.ts**: IP assets, portfolio management
@@ -421,6 +428,7 @@ Group handlers by domain:
 ## Verification Checklist
 
 After creating handlers, verify:
+
 - [ ] Handler file created in `test/msw/handlers/[domain].ts`
 - [ ] Handler registered in `test/msw/handlers/index.ts`
 - [ ] Environment-specific data defined (test, dev.local, ci)
@@ -468,11 +476,13 @@ npm run test:e2e
 
 After MSW handlers are created and registered, proceed to:
 **Phase 2**: Step Definition Implementation
+
 - See: `phase2-03-template-generate-step-definition-scaffolding.md`
 
 ## Output Verification
 
 Before moving to Phase 2, confirm:
+
 1. ✅ All endpoints from analysis are implemented
 2. ✅ Environment-specific data defined for all three environments
 3. ✅ Handlers registered in index.ts

@@ -7,22 +7,22 @@ You are playing the role of: BDD Frontend Agent - Phase 1 (MSW Handler Creation)
 !!!! Important: Replace feature file path and BFFE spec path with actual paths !!!!
 
 {
-  "featureFile": "features/02-dashboard-overview/phase1-core-*.feature",
-  "bffeSpec": "specs/02-dashboard-overview/bffe-spec.md",
-  "task": "phase1-01-analyze-scenarios-for-api-requirements",
-  "phase": "1-msw-handler-creation",
-  "testFramework": "playwright",
-  "bddFramework": "cucumber",
-  "projectType": "nuxt3-e2e",
-  "language": "typescript",
-  "outputFile": "temp/api-requirements-analysis.md"
+"featureFile": "features/011-onboarding/phase1-core-\*.feature",
+"bffeSpec": "specs/011-onboarding/bffe-spec.md",
+"task": "phase1-01-analyze-scenarios-for-api-requirements",
+"phase": "1-msw-handler-creation",
+"testFramework": "playwright",
+"bddFramework": "cucumber",
+"projectType": "nuxt3-e2e",
+"language": "typescript",
+"outputFile": "temp/api-requirements-analysis.md"
 }
 
 ## BDD Frontend Agent Behavior (Step-by-Step)
 
 1. **Read Feature File and BFFE Spec**
    - Read the specified feature file from `features/` directory
-   - **Read the BFFE spec** from `specs/02-dashboard-overview/bffe-spec.md`
+   - **Read the BFFE spec** from `specs/011-onboarding/bffe-spec.md`
    - Parse all scenarios and scenario outlines
    - Identify Given/When/Then steps
 
@@ -86,7 +86,7 @@ You are playing the role of: BDD Frontend Agent - Phase 1 (MSW Handler Creation)
 
 Create `temp/api-requirements-analysis.md` with this structure:
 
-```markdown
+````markdown
 # API Requirements Analysis
 
 **Feature**: [Feature Name]
@@ -98,28 +98,32 @@ Create `temp/api-requirements-analysis.md` with this structure:
 ### Scenario: [Scenario Name]
 
 **Given Steps**:
+
 - Alice has 45 active patents
 - Alice has 23 pending patent applications
 
 **API Requirements**:
+
 - **Endpoint**: `GET /api/dashboard`
 - **Response Structure**:
   ```typescript
   {
-    success: boolean
+    success: boolean;
     data: {
       summary: {
-        activePatents: number
-        pendingApplications: number
-        trademarks: number
+        activePatents: number;
+        pendingApplications: number;
+        trademarks: number;
       }
     }
   }
   ```
+````
 
 **Environment-Specific Data**:
 
 **test** (minimal):
+
 ```typescript
 {
   summary: {
@@ -131,6 +135,7 @@ Create `temp/api-requirements-analysis.md` with this structure:
 ```
 
 **dev.local** (rich, from scenario):
+
 ```typescript
 {
   summary: {
@@ -142,6 +147,7 @@ Create `temp/api-requirements-analysis.md` with this structure:
 ```
 
 **ci** (deterministic):
+
 ```typescript
 {
   summary: {
@@ -168,20 +174,21 @@ Create `temp/api-requirements-analysis.md` with this structure:
 1. Create MSW handlers in `test/msw/handlers/[domain].ts`
 2. Use this analysis to implement environment-specific mock data
 3. Register handlers in `test/msw/handlers/index.ts`
-```
+
+````
 
 ## Project-Specific Context
 
 ### Feature File Locations
-- Primary: `features/02-dashboard-overview/phase1-core-*.feature`
-- Secondary: `specs/02-dashboard-overview/phase1-core-*.feature`
+- Primary: `features/011-onboarding/phase1-core-*.feature`
+- Secondary: `specs/011-onboarding/phase1-core-*.feature`
 
 ### BFFE Specification Reference
 
 **Critical**: Always reference the BFFE spec when analyzing scenarios!
 
-**Location**: `specs/02-dashboard-overview/bffe-spec.md`
-- Example: `specs/02-dashboard-overview/bffe-spec.md` for Dashboard feature
+**Location**: `specs/011-onboarding/bffe-spec.md`
+- Example: `specs/011-onboarding/bffe-spec.md` for Dashboard feature
 
 **Purpose**:
 - Defines authoritative API contract (OpenAPI 3.0)
@@ -239,61 +246,68 @@ All API responses follow this structure:
     pageSize: number
   }
 }
-```
+````
 
 ### IP Hub Domain Models
 
 **PatentApplication**:
+
 ```typescript
 {
-  id: string
-  title: string
-  status: 'draft' | 'in_progress' | 'submitted' | 'granted' | 'rejected'
-  type: 'patent' | 'trademark' | 'copyright'
-  jurisdiction: string
-  filingDate: string
-  completionPercentage: number
+  id: string;
+  title: string;
+  status: 'draft' | 'in_progress' | 'submitted' | 'granted' | 'rejected';
+  type: 'patent' | 'trademark' | 'copyright';
+  jurisdiction: string;
+  filingDate: string;
+  completionPercentage: number;
 }
 ```
 
 **Dashboard Summary**:
+
 ```typescript
 {
-  activePatents: number
-  pendingApplications: number
-  trademarks: number
-  copyrights: number
-  upcomingDeadlines: number
+  activePatents: number;
+  pendingApplications: number;
+  trademarks: number;
+  copyrights: number;
+  upcomingDeadlines: number;
 }
 ```
 
 **Collaborator**:
+
 ```typescript
 {
-  id: string
-  name: string
-  email: string
-  role: string
-  accessLevel: string
-  lastActive: string
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  accessLevel: string;
+  lastActive: string;
 }
 ```
 
 ### Scenario Extraction Patterns
 
 **Pattern 1**: Numerical Data
+
 - Given: "Alice has **45** active patents"
 - Extracted: `activePatents: 45` for `dev.local` environment
 
 **Pattern 2**: List Data
+
 - Given: "Alice has submitted applications for **Dubai, PCT, and EPO**"
 - Extracted: Array with 3 jurisdictions
 
 **Pattern 3**: State Data
+
 - Given: "Alice has **3 applications in draft**"
 - Extracted: Filter applications where `status === 'draft'` and count === 3
 
 **Pattern 4**: Empty States
+
 - Given: "Bob has **no active applications**"
 - Extracted: Empty array `[]` for that data set
 
@@ -332,7 +346,7 @@ All API responses follow this structure:
 
 ```bash
 # View feature files
-ls features/02-dashboard-overview/
+ls features/011-onboarding/
 
 # Create temp directory
 mkdir -p temp
@@ -344,6 +358,7 @@ mkdir -p temp
 ## Output Verification
 
 After completing analysis, verify:
+
 1. ✅ All scenarios have been analyzed
 2. ✅ Each unique endpoint is documented
 3. ✅ Environment-specific data is defined (test, dev.local, ci)

@@ -15,7 +15,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
   "projectType": "nestjs-e2e",
   "language": "typescript",
   "sourceContext": [
-    "apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature",
+    "apps/ip-hub-backend-e2e/features/<<YOUR-FEATURE-HERE>>.feature",
     "specs/<<YOUR-SPEC-FOLDER>>/bffe-spec.md",
     "specs/<<YOUR-SPEC-FOLDER>>/cqrs-contract.md",
     "specs/<<YOUR-SPEC-FOLDER>>/core-services-spec.md",
@@ -27,7 +27,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 
 1. **Review Context and Scaffolding**
    - Read the BDD backend agent context file at `workflow-context/bdd-agents/bdd-backend-agent/bdd-backend-agent-context.md`
-   - Review previously generated step definition implementations in `apps/ip-hub-backend/features/step-definitions/`
+   - Review previously generated step definition implementations in `apps/ip-hub-backend-e2e/features/step-definitions/`
    - Read the scaffolding file at `temp/step-definition-scaffolds.txt`
    - Review the BFFE spec and CQRS contract for API endpoint details
    - Maintain consistent style with existing implementations
@@ -36,7 +36,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
    - Create complete TypeScript implementations for each undefined step
    - Use Axios HTTP client for API interactions
    - Use Jest expect for assertions
-   - Import types from `apps/ip-hub-backend/features/support/world.ts` and `types.ts`
+   - Import types from `apps/ip-hub-backend-e2e/features/support/world.ts` and `types.ts`
    - Use factory functions from `test/shared/factories/` for test data setup
    - Use async/await for all asynchronous operations
 
@@ -47,7 +47,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
    - Never use direct SQL; always use factories and repositories
 
 4. **Type Safety**
-   - Create TypeScript interfaces for new BDD objects in `apps/ip-hub-backend/features/support/types.ts`
+   - Create TypeScript interfaces for new BDD objects in `apps/ip-hub-backend-e2e/features/support/types.ts`
    - Never default to `any` type
    - Use proper type annotations: `async function (this: IPHubWorld, param: string)`
    - Import DTOs from `@ip-hub/api-contracts` library
@@ -103,12 +103,12 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 {
   "implementedSteps": 25,
   "createdFiles": [
-    "apps/ip-hub-backend/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
-    "apps/ip-hub-backend/features/step-definitions/common-steps.ts"
+    "apps/ip-hub-backend-e2e/features/step-definitions/<<YOUR-DOMAIN>>-steps.ts",
+    "apps/ip-hub-backend-e2e/features/step-definitions/common-steps.ts"
   ],
   "updatedFiles": [
-    "apps/ip-hub-backend/features/support/types.ts",
-    "apps/ip-hub-backend/features/support/world.ts"
+    "apps/ip-hub-backend-e2e/features/support/types.ts",
+    "apps/ip-hub-backend-e2e/features/support/world.ts"
   ],
   "status": "success",
   "summary": "Implemented 25 step definitions with proper TypeScript types and API tests",
@@ -123,7 +123,7 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 ## Project-Specific Context
 
 ### World Object Structure
-Located in `apps/ip-hub-backend/features/support/world.ts`:
+Located in `apps/ip-hub-backend-e2e/features/support/world.ts`:
 ```typescript
 import { World, setWorldConstructor } from '@cucumber/cucumber'
 import { AxiosInstance } from 'axios'
@@ -390,13 +390,13 @@ interface ApiErrorResponse {
 ### Test Execution
 ```bash
 # Run all E2E tests
-npx nx test:e2e:local ip-hub-backend
+npx nx e2e ip-hub-backend-e2e
 
 # Run specific feature
-npx cucumber-js apps/ip-hub-backend/features/<<CURRENT-SPEC>>/*.feature
+npx cucumber-js apps/ip-hub-backend-e2e/features/<<YOUR-FEATURE-HERE>>.feature
 
 # Dry run to check syntax
-npx nx test:e2e:local ip-hub-backend --dry-run
+npx nx e2e ip-hub-backend-e2e --dry-run
 
 # View HTML report
 open reports/cucumber_report.html

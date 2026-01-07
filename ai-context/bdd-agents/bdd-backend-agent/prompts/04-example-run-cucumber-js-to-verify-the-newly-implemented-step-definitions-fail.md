@@ -7,11 +7,11 @@ You are playing the role of: BDD Backend Agent for E2E API testing. Use the inst
 !!!! Important: No files to change for this one !!!!
 
 {
-  "featureFiles": "apps/ip-hub-backend/features/011-onboarding/*.feature",
+  "featureFile": "apps/ip-hub-backend-e2e/features/phase1-core-dashboard.feature",
   "stepDefinitionFiles": [
-    "apps/ip-hub-backend/features/step-definitions/dashboard-steps.ts",
-    "apps/ip-hub-backend/features/step-definitions/application-steps.ts",
-    "apps/ip-hub-backend/features/step-definitions/alert-steps.ts"
+    "apps/ip-hub-backend-e2e/features/step-definitions/dashboard-steps.ts",
+    "apps/ip-hub-backend-e2e/features/step-definitions/application-steps.ts",
+    "apps/ip-hub-backend-e2e/features/step-definitions/alert-steps.ts"
   ],
   "task": "04-verify-step-definitions-fail-correctly",
   "testFramework": "axios",
@@ -31,22 +31,34 @@ In TDD/BDD workflow, after implementing step definitions but **before** implemen
 
 ## BDD Backend Agent Behavior (Step-by-Step)
 
-### Step 1: Run Cucumber Tests
+### Step 1: Ensure Prerequisites
+```bash
+# Ensure database is running (Testcontainers or Docker)
+docker-compose up -d
+
+# Ensure backend is running (for integration tests)
+npx nx serve ip-hub-backend --watch=false &
+
+# Or if using Testcontainers, ensure Docker is available
+docker info
+```
+
+### Step 2: Run Cucumber Tests
 ```bash
 # Run the E2E tests for the specific feature
-npx nx test:e2e:local ip-hub-backend
+npx nx e2e ip-hub-backend-e2e
 
 # Or run with more verbose output
-npx cucumber-js apps/ip-hub-backend/features/011-onboarding/*.feature \
+npx cucumber-js apps/ip-hub-backend-e2e/features/phase1-core-dashboard.feature \
   --format progress-bar \
   --format json:reports/cucumber_report.json \
   --format html:reports/cucumber_report.html
 
 # Run with tags to focus on specific scenarios
-npx cucumber-js apps/ip-hub-backend/features/011-onboarding/*.feature --tags "@dashboard"
+npx cucumber-js apps/ip-hub-backend-e2e/features/**/*.feature --tags "@dashboard"
 ```
 
-### Step 2: Analyze Failure Types
+### Step 3: Analyze Failure Types
 
 **Expected Failures (Good - Implementation Needed)**:
 - `404 Not Found` - API endpoint not implemented yet
@@ -61,7 +73,7 @@ npx cucumber-js apps/ip-hub-backend/features/011-onboarding/*.feature --tags "@d
 - `500 Internal Server Error` - Server-side crash
 - Connection errors - Server not running or wrong URL
 
-### Step 3: Document Results
+### Step 4: Document Results
 
 Categorize each failing scenario:
 - **Ready for Implementation**: Fails for expected reasons (404, empty data)
@@ -202,10 +214,10 @@ Scenario: User views empty applications section
 
 ```bash
 # Run all E2E tests with verbose output
-npx nx test:e2e:local ip-hub-backend --verbose
+npx nx e2e ip-hub-backend-e2e --verbose
 
 # Run specific feature file
-npx cucumber-js apps/ip-hub-backend/features/011-onboarding/*.feature
+npx cucumber-js apps/ip-hub-backend-e2e/features/phase1-core-dashboard.feature
 
 # Run with tags
 npx cucumber-js --tags "@dashboard and not @wip"
@@ -223,7 +235,7 @@ open reports/cucumber_report.html
 npx tsc --noEmit
 
 # Check for undefined steps
-npx nx test:e2e:local ip-hub-backend --dry-run
+npx nx e2e ip-hub-backend-e2e --dry-run
 ```
 
 ## Post-Verification Checklist

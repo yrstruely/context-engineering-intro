@@ -3,6 +3,7 @@
 ## Purpose
 
 Generate backend-focused BDD feature files that complement frontend feature files. Backend features focus on:
+
 1. **BFFE API behavior** - Testing the Backend-For-Frontend layer via HTTP/axios calls
 2. **CQRS operations** - Commands that mutate state and queries that read data
 3. **Domain events** - Event emission, handling, and cross-context communication
@@ -26,7 +27,7 @@ Generate backend-focused BDD feature files that complement frontend feature file
     "coreServicesSpec": "specs/<Current-Spec-Context>/core-services-spec.md",
     "nonFunctionalRequirements": "specs/<Current-Spec-Context>/non-functional-requirements.md"
   },
-  "domainModelDocs": "docs/domain-model-specification/",
+  "domainModelDocs": "documentation/domain-model-specification/",
   "userPersonas": "specs/user-types-and-personas/user-types-and-personas.md",
   "contextFile": "workflow-context/bdd-agents/bdd-feature-agent/bdd-agent-context.md"
 }
@@ -62,35 +63,45 @@ Use the instructions in `workflow-context/bdd-agents/bdd-feature-agent/bdd-agent
 Create separate feature files for each category:
 
 #### A. BFFE API Features
+
 Test the Backend-For-Frontend API layer using HTTP calls (axios/supertest):
+
 - Request/response validation
 - Authentication and authorization
 - Error handling and status codes
 - API versioning and compatibility
 
 #### B. CQRS Command Features
+
 Test state-changing operations:
+
 - Command validation and preconditions
 - Domain event emission
 - Error handling and invariants
 - Idempotency where applicable
 
 #### C. CQRS Query Features
+
 Test read operations:
+
 - Query response structure
 - Filtering and pagination
 - Read model consistency
 - Performance under load
 
 #### D. Domain Event Features
+
 Test event-driven behavior:
+
 - Event emission on state changes
 - Event handler subscriptions
 - Cross-context event communication
 - Event ordering and reliability
 
 #### E. Non-Functional Requirement Features
+
 Test quality attributes:
+
 - Performance (response times, throughput)
 - Security (authentication, authorization, input validation)
 - Reliability (error handling, graceful degradation)
@@ -132,26 +143,26 @@ Scenario: PatentApplicationDrafted event is emitted when creating a patent
 
 ### 5. Tag Strategy for Backend Features
 
-| Tag | Purpose | Usage |
-|-----|---------|-------|
-| `@backend` | All backend tests | Apply to all backend scenarios |
-| `@api` | BFFE API tests | HTTP endpoint tests |
-| `@command` | CQRS command tests | State-changing operations |
-| `@query` | CQRS query tests | Read operations |
-| `@event` | Domain event tests | Event emission/handling |
-| `@integration` | Cross-service tests | Service orchestration |
-| `@performance` | Performance tests | Response time, throughput |
-| `@security` | Security tests | Auth, authz, input validation |
-| `@nfr` | Non-functional requirements | Quality attribute tests |
+| Tag            | Purpose                     | Usage                          |
+| -------------- | --------------------------- | ------------------------------ |
+| `@backend`     | All backend tests           | Apply to all backend scenarios |
+| `@api`         | BFFE API tests              | HTTP endpoint tests            |
+| `@command`     | CQRS command tests          | State-changing operations      |
+| `@query`       | CQRS query tests            | Read operations                |
+| `@event`       | Domain event tests          | Event emission/handling        |
+| `@integration` | Cross-service tests         | Service orchestration          |
+| `@performance` | Performance tests           | Response time, throughput      |
+| `@security`    | Security tests              | Auth, authz, input validation  |
+| `@nfr`         | Non-functional requirements | Quality attribute tests        |
 
 ### 6. Map Frontend to Backend Scenarios
 
 For each frontend scenario, identify the corresponding backend behavior:
 
-| Frontend Scenario | Backend Coverage |
-|-------------------|------------------|
-| "User views dashboard after login" | GET /dashboard/summary API, GetPortfolioSummary query |
-| "User dismisses alert notification" | POST /alerts/{id}/dismiss API, DismissNotification command, NotificationDismissed event |
+| Frontend Scenario                       | Backend Coverage                                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------ |
+| "User views dashboard after login"      | GET /dashboard/summary API, GetPortfolioSummary query                                      |
+| "User dismisses alert notification"     | POST /alerts/{id}/dismiss API, DismissNotification command, NotificationDismissed event    |
 | "User creates a new patent application" | POST /actions/register API, DraftPatentApplication command, PatentApplicationDrafted event |
 
 ---
@@ -875,14 +886,14 @@ After running this agent with the example inputs, you should have:
 
 ## Key Differences from Frontend Features
 
-| Aspect | Frontend Features | Backend Features |
-|--------|-------------------|------------------|
-| **Focus** | User interactions, UI behavior | API contracts, data flow, events |
-| **Language** | "Alice sees...", "Alice clicks..." | "The response contains...", "Event emitted..." |
-| **Tags** | @frontend, @ux | @backend, @api, @command, @query, @event |
-| **Assertions** | Visual elements, navigation | Status codes, response bodies, events |
-| **Test Runner** | Playwright, browser | Axios, supertest, database assertions |
-| **NFR Focus** | Accessibility, visual design | Performance, security, reliability |
+| Aspect          | Frontend Features                  | Backend Features                               |
+| --------------- | ---------------------------------- | ---------------------------------------------- |
+| **Focus**       | User interactions, UI behavior     | API contracts, data flow, events               |
+| **Language**    | "Alice sees...", "Alice clicks..." | "The response contains...", "Event emitted..." |
+| **Tags**        | @frontend, @ux                     | @backend, @api, @command, @query, @event       |
+| **Assertions**  | Visual elements, navigation        | Status codes, response bodies, events          |
+| **Test Runner** | Playwright, browser                | Axios, supertest, database assertions          |
+| **NFR Focus**   | Accessibility, visual design       | Performance, security, reliability             |
 
 ## Best Practices
 

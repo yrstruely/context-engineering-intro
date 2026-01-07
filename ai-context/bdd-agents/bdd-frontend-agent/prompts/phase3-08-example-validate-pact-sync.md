@@ -7,12 +7,12 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Validat
 !!!! Important: Pact contracts must be generated first (Phase 3 Step 1) and BFFE spec must exist !!!!
 
 {
-  "task": "phase3-08-validate-pact-sync",
-  "phase": "3-pact-contract-validation",
-  "mswHandlersDirectory": "test/msw/handlers/",
-  "pactDirectory": "test/pact/pacts/",
-  "bffeSpec": "specs/02-dashboard-overview/bffe-spec.md",
-  "command": "npm run pact:validate"
+"task": "phase3-08-validate-pact-sync",
+"phase": "3-pact-contract-validation",
+"mswHandlersDirectory": "test/msw/handlers/",
+"pactDirectory": "test/pact/pacts/",
+"bffeSpec": "specs/011-onboarding/bffe-spec.md",
+"command": "npm run pact:validate"
 }
 
 ## BDD Frontend Agent Behavior (Step-by-Step)
@@ -28,7 +28,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Validat
    - Note sync status for each interaction
 
 3. **Cross-Validate Against BFFE Spec**
-   - **Read BFFE spec** from `specs/02-dashboard-overview/bffe-spec.md`
+   - **Read BFFE spec** from `specs/011-onboarding/bffe-spec.md`
    - **Compare Pact contracts with BFFE spec**:
      - Endpoint paths match BFFE spec
      - Request parameters match BFFE spec
@@ -42,7 +42,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Validat
    - **MSW-Pact Mismatch**: Report and suggest MSW handler fixes
    - **Pact-BFFE Mismatch**: Report and suggest MSW handler updates to match BFFE spec
 
-4. **Inform Developer** (on success)
+5. **Inform Developer** (on success)
    - Confirm validation passed
    - Provide next steps for contract publication
    - Include version management guidance
@@ -50,6 +50,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Validat
 ## Expected Output (Agent's Response Schema)
 
 ### Success Case:
+
 ```json
 {
   "task": "phase3-08-validate-pact-sync",
@@ -79,6 +80,7 @@ You are playing the role of: BDD Frontend Agent - Phase 3 (Pact Contract Validat
 ```
 
 ### Failure Case:
+
 ```json
 {
   "task": "phase3-08-validate-pact-sync",
@@ -112,6 +114,7 @@ npm run pact:validate
 ```
 
 **What Happens**:
+
 1. Script reads Pact contracts from `test/pact/pacts/`
 2. Reads MSW handlers from `test/msw/handlers/`
 3. Compares response structures for each interaction
@@ -121,6 +124,7 @@ npm run pact:validate
 ### Step 2: Understand Validation Results
 
 **Validation Checks**:
+
 - ✅ Response field names match
 - ✅ Response field types match
 - ✅ Nested structure depth matches
@@ -132,6 +136,7 @@ npm run pact:validate
 If validation finds mismatches:
 
 1. **Read the Error Report**
+
    ```
    ❌ Mismatch: GET /api/dashboard
 
@@ -159,25 +164,26 @@ If validation finds mismatches:
    ```
 
 2. **Fix MSW Handler**
+
    ```typescript
    // test/msw/handlers/dashboard.ts
    // BEFORE (incorrect):
    const dashboardData = getEnvironmentData({
      'dev.local': {
        summary: {
-         activeAssets: 45  // ❌ Wrong field name
-       }
-     }
-   })
+         activeAssets: 45, // ❌ Wrong field name
+       },
+     },
+   });
 
    // AFTER (correct):
    const dashboardData = getEnvironmentData({
      'dev.local': {
        summary: {
-         activePatents: 45  // ✅ Matches Pact contract
-       }
-     }
-   })
+         activePatents: 45, // ✅ Matches Pact contract
+       },
+     },
+   });
    ```
 
 3. **Re-run Workflow**
@@ -227,6 +233,7 @@ cat test/pact/pacts/frontend-backend-consumer.json | jq '.interactions | length'
 ```
 
 Verify:
+
 - ✅ All expected endpoints are present
 - ✅ Interaction descriptions are clear
 - ✅ Request/response structures are accurate
@@ -234,6 +241,7 @@ Verify:
 ### Step 2: Version Management
 
 **If API Contracts Changed**:
+
 - Update `package.json` version
 - Follow semantic versioning:
   - **Major** (x.0.0): Breaking changes
@@ -252,10 +260,12 @@ npm run pact:publish
 ```
 
 **Environment Variables Required**:
+
 - `PACT_BROKER_URL`: Pact Broker server URL
 - `PACT_BROKER_TOKEN`: Authentication token for broker
 
 **What Happens**:
+
 1. Contracts uploaded to Pact Broker
 2. Tagged with current package version
 3. Available for backend team to pull and verify
@@ -263,6 +273,7 @@ npm run pact:publish
 ### Step 4: Notify Backend Team
 
 After publishing, notify backend team:
+
 - ✉️ New/updated contracts published to Pact Broker
 - 📦 Consumer version: `[package version]`
 - 🔗 Pact Broker URL: `[broker url]`
@@ -270,6 +281,7 @@ After publishing, notify backend team:
 - 🎯 Backend should run `pact:verify` to test against contracts
 
 **Example Notification**:
+
 ```
 Subject: New API Contracts Published - IP Hub Frontend v1.3.0
 
@@ -326,61 +338,69 @@ Integration Works Seamlessly! 🎉
 ### Issue 1: Field Name Mismatch
 
 **Error**:
+
 ```
 MSW returns 'userId' but Pact expects 'user_id'
 ```
 
 **Solution**: Use consistent naming (camelCase recommended)
+
 ```typescript
 // Update MSW handler
 const data = {
-  userId: '123'  // ✅ Consistent
-}
+  userId: '123', // ✅ Consistent
+};
 ```
 
 ### Issue 2: Missing Field
 
 **Error**:
+
 ```
 Pact expects field 'totalCount' but MSW doesn't return it
 ```
 
 **Solution**: Add field to MSW handler
+
 ```typescript
 const data = {
   items: [],
-  totalCount: 0  // ✅ Added
-}
+  totalCount: 0, // ✅ Added
+};
 ```
 
 ### Issue 3: Type Mismatch
 
 **Error**:
+
 ```
 MSW returns string '45' but Pact expects number 45
 ```
 
 **Solution**: Fix type in MSW handler
+
 ```typescript
 const data = {
-  activePatents: 45  // ✅ Number, not string
-}
+  activePatents: 45, // ✅ Number, not string
+};
 ```
 
 ### Issue 4: Nested Structure Different
 
 **Error**:
+
 ```
 MSW structure: { data: { items: [] } }
 Pact structure: { data: [] }
 ```
 
 **Solution**: Match nesting level
+
 ```typescript
 return HttpResponse.json({
   success: true,
-  data: []  // ✅ Match Pact structure
-})
+  data: [], // ✅ Match Pact structure
+});
 ```
 
 ## Project-Specific Context
@@ -388,6 +408,7 @@ return HttpResponse.json({
 ### Validation Script
 
 Located in `scripts/validate-msw-pact-sync.ts`:
+
 - Reads Pact contracts
 - Reads MSW handlers
 - Deep comparison of structures
@@ -406,6 +427,7 @@ Located in `scripts/validate-msw-pact-sync.ts`:
 ## Verification Checklist
 
 After successful validation, confirm:
+
 - [ ] All interactions validated (count matches expected)
 - [ ] All structures match between MSW and Pact
 - [ ] No mismatches reported
@@ -451,6 +473,7 @@ open $PACT_BROKER_URL
 ## Output Verification
 
 After completing validation, confirm:
+
 1. ✅ Validation passed with all structures matching
 2. ✅ Developer notified with next steps
 3. ✅ Contracts ready for publication
