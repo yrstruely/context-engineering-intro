@@ -215,8 +215,8 @@ When('Alice creates a resource', async function (this: IPHubWorld) {
 
 After providing feedback, the agent should verify:
 1. Run TypeScript compiler: `npx tsc --noEmit`
-2. Run Cucumber dry run: `npx nx e2e ip-hub-backend-e2e --dry-run`
-3. Run actual tests: `npx nx e2e ip-hub-backend-e2e`
+2. Run Cucumber dry run: `npx nx test:e2e:local ip-hub-backend --dry-run`
+3. Run actual tests: `npx nx test:e2e:local ip-hub-backend`
 4. Check for runtime errors or unexpected failures
 
 ## Commands
@@ -225,10 +225,10 @@ After providing feedback, the agent should verify:
 npx tsc --noEmit
 
 # Validate step definitions
-npx nx e2e ip-hub-backend-e2e --dry-run
+npx nx test:e2e:local ip-hub-backend --dry-run
 
 # Run E2E tests
-npx nx e2e ip-hub-backend-e2e
+npx nx test:e2e:local ip-hub-backend
 
 # View diffs
 git diff apps/ip-hub-backend/features/step-definitions/
